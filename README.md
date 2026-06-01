@@ -1,6 +1,6 @@
 # 🗓️ Gestor de Eventos
 **Sistema de gestión de salón de eventos**
-> Materia: Sistemas de Información II
+> Materia: Programación II
 
 ---
 
