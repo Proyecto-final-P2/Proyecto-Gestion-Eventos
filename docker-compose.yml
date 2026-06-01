@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: gestor_mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: gestor123
+      MYSQL_DATABASE: salonDeEventos
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./database/TPBD_gestion_de_eventos.sql:/docker-entrypoint-initdb.d/init.sql
+      - gestor_db_data:/var/lib/mysql
+
+volumes:
+  gestor_db_data:
