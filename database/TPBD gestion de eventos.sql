@@ -94,8 +94,6 @@ CREATE TABLE Contratados (
   FOREIGN KEY (Servicios_SE_ID) REFERENCES Servicios (SE_ID)
 );
 
-SELECT *FROM Invitado;
-
 -- Datos para la tabla Salon
 INSERT INTO Salon (SA_ID, SA_Direccion, SA_Nombre, SA_Capacidad, SA_CantSillas, SA_CantMesas, SA_Costo)
 VALUES 
