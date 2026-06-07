@@ -7,6 +7,7 @@ import java.util.List;
 
 public class SalonDAO {
 
+    // inserta salón en la BD
     public void insertar(Salon s) throws SQLException {
         String sql = "INSERT INTO Salon (SA_Direccion, SA_Nombre, SA_Capacidad, SA_CantSillas, SA_CantMesas, SA_Costo) VALUES (?,?,?,?,?,?)";
         try (Connection con = Util.getConnection();
@@ -21,6 +22,7 @@ public class SalonDAO {
         }
     }
 
+    // lista salones de la BD
     public List<Salon> listar() throws SQLException {
         List<Salon> lista = new ArrayList<>();
         String sql = "SELECT * FROM Salon";
@@ -32,6 +34,7 @@ public class SalonDAO {
         return lista;
     }
 
+    // busca salón por id en la BD
     public Salon buscarPorId(int id) throws SQLException {
         String sql = "SELECT * FROM Salon WHERE SA_ID = ?";
         try (Connection con = Util.getConnection();
@@ -44,6 +47,7 @@ public class SalonDAO {
         return null;
     }
 
+    // actualiza salón en la BD
     public void actualizar(Salon s) throws SQLException {
         String sql = "UPDATE Salon SET SA_Direccion=?, SA_Nombre=?, SA_Capacidad=?, SA_CantSillas=?, SA_CantMesas=?, SA_Costo=? WHERE SA_ID=?";
         try (Connection con = Util.getConnection();
@@ -59,6 +63,7 @@ public class SalonDAO {
         }
     }
 
+    // elimina salón de la BD
     public void eliminar(int id) throws SQLException {
         String sql = "DELETE FROM Salon WHERE SA_ID = ?";
         try (Connection con = Util.getConnection();
@@ -68,6 +73,7 @@ public class SalonDAO {
         }
     }
 
+    // convierte fila de la BD en objeto Salon
     private Salon mapear(ResultSet rs) throws SQLException {
         return new Salon(
             rs.getInt("SA_ID"),

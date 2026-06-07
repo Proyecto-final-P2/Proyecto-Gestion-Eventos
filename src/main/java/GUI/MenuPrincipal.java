@@ -9,11 +9,13 @@ public class MenuPrincipal extends JFrame {
     private final Cliente clienteActivo;
     private JPanel panelContenido;
 
+    // recibe al cliente que acaba de iniciar sesion
     public MenuPrincipal(Cliente clienteActivo) {
         this.clienteActivo = clienteActivo;
         initComponents();
     }
 
+    // muestra la ventana entera, la barra lateral oscura y la zona central
     private void initComponents() {
         setTitle("Gestor de Eventos - Panel Principal");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -68,6 +70,7 @@ public class MenuPrincipal extends JFrame {
         add(panelContenido, BorderLayout.CENTER);
     }
 
+    // crea los botones grises del menu
     private JButton crearBotonMenu(String texto) {
         JButton btn = new JButton(texto);
         btn.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
@@ -81,6 +84,7 @@ public class MenuPrincipal extends JFrame {
         return btn;
     }
 
+    // segun el boton que toques, reemplaza el centro de la pantalla con ese panel
     private void cargarPanel(String seccion) {
         panelContenido.removeAll();
         JPanel panel;

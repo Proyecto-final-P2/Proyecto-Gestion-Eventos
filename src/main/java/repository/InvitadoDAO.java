@@ -7,6 +7,7 @@ import java.util.List;
 
 public class InvitadoDAO {
 
+    // inserta invitado en BD
     public void insertar(Invitado inv) throws SQLException {
         String sql = "INSERT INTO Invitado (IN_DNI, IN_NombreApellido, IN_Email, IN_Telefono, IN_Asistencia, IN_PreferenciaMenu) VALUES (?,?,?,?,?,?)";
         try (Connection con = Util.getConnection();
@@ -21,6 +22,7 @@ public class InvitadoDAO {
         }
     }
 
+    // lista invitados de un evento específico
     public List<Invitado> listarPorEvento(int eventoId) throws SQLException {
         List<Invitado> lista = new ArrayList<>();
         String sql = "SELECT i.* FROM Invitado i JOIN Asiste a ON i.IN_ID = a.Invitado_IN_ID WHERE a.Evento_E_ID = ?";
@@ -34,6 +36,7 @@ public class InvitadoDAO {
         return lista;
     }
 
+    // actualiza invitado en BD
     public void actualizar(Invitado inv) throws SQLException {
         String sql = "UPDATE Invitado SET IN_Asistencia=?, IN_PreferenciaMenu=? WHERE IN_ID=?";
         try (Connection con = Util.getConnection();
@@ -45,6 +48,7 @@ public class InvitadoDAO {
         }
     }
 
+    // elimina invitado de la BD
     public void eliminar(int id) throws SQLException {
         String sql = "DELETE FROM Invitado WHERE IN_ID = ?";
         try (Connection con = Util.getConnection();
@@ -54,6 +58,7 @@ public class InvitadoDAO {
         }
     }
 
+    // convierte una fila de la BD en un objeto Invitado
     private Invitado mapear(ResultSet rs) throws SQLException {
         return new Invitado(
             rs.getInt("IN_ID"),

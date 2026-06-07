@@ -1,6 +1,8 @@
 package model;
 
+// plantilla para crear servicios
 public class Servicio {
+    // atributos
     private int    id;
     private String tipo;
     private String proveedor;
@@ -10,6 +12,7 @@ public class Servicio {
 
     public Servicio() {}
 
+    // crea servicio con todos los datos
     public Servicio(int id, String tipo, String proveedor, double costo, int cantidad, String estado) {
         this.id        = id;
         this.tipo      = tipo;
@@ -19,6 +22,7 @@ public class Servicio {
         this.estado    = estado;
     }
 
+    // Getters
     public int    getId()        { return id; }
     public String getTipo()      { return tipo; }
     public String getProveedor() { return proveedor; }
@@ -26,6 +30,7 @@ public class Servicio {
     public int    getCantidad()  { return cantidad; }
     public String getEstado()    { return estado; }
 
+    // Setters
     public void setId(int id)            { this.id = id; }
     public void setTipo(String t)        { this.tipo = t; }
     public void setProveedor(String p)   { this.proveedor = p; }
@@ -33,6 +38,6 @@ public class Servicio {
     public void setCantidad(int c)       { this.cantidad = c; }
     public void setEstado(String e)      { this.estado = e; }
 
-    @Override
+    @Override //mostrar tipo y proveedor
     public String toString() { return tipo + " - " + proveedor; }
 }

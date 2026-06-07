@@ -7,7 +7,7 @@ import java.util.List;
 
 public class PagoDAO {
 
-    /** Llama al procedimiento almacenado RegistrarPagoParaReserva */
+    // registra el pago en la BD
     public String registrarPago(int reservaId, double monto) throws SQLException {
         String sql = "{CALL RegistrarPagoParaReserva(?,?,?)}";
         try (Connection con = Util.getConnection();
@@ -20,6 +20,7 @@ public class PagoDAO {
         }
     }
 
+    // lista pagos de una reserva específica
     public List<Pago> listarPorReserva(int reservaId) throws SQLException {
         List<Pago> lista = new ArrayList<>();
         String sql = "SELECT * FROM Pago WHERE Reserva_R_ID = ?";
@@ -33,6 +34,7 @@ public class PagoDAO {
         return lista;
     }
 
+    // convierte una fila de la BD en un objeto Pago
     private Pago mapear(ResultSet rs) throws SQLException {
         return new Pago(
             rs.getInt("P_ID"),

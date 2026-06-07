@@ -4,8 +4,10 @@ import controller.LoginController;
 import javax.swing.*;
 import java.awt.*;
 
+// ventana donde se ingresa email y clave
 public class Login extends JFrame {
 
+    // cuadros de texto y el boton
     private JTextField     txtEmail;
     private JPasswordField txtPassword;
     private JButton        btnIngresar;
@@ -16,6 +18,7 @@ public class Login extends JFrame {
         controller = new LoginController(this);
     }
 
+    // dibuja la ventana, los botones y los cuadros de texto
     private void initComponents() {
         setTitle("Gestor de Eventos - Iniciar Sesión");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -57,7 +60,7 @@ public class Login extends JFrame {
         btnIngresar.setFont(new Font("Arial", Font.BOLD, 14));
         panel.add(btnIngresar, gbc);
 
-        // Acción del botón
+        // accion del boton: le pasa el email y clave al controlador
         btnIngresar.addActionListener(e ->
             controller.iniciarSesion(txtEmail.getText(), new String(txtPassword.getPassword()))
         );

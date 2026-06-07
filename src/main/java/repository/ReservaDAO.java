@@ -7,7 +7,7 @@ import java.util.List;
 
 public class ReservaDAO {
 
-    /** Llama al procedimiento almacenado CrearReservaConelID */
+    // registrar reserva en BD
     public String crearReserva(int id, java.time.LocalDate fecha,
                                 java.time.LocalTime inicio, java.time.LocalTime fin,
                                 double monto) throws SQLException {
@@ -25,6 +25,7 @@ public class ReservaDAO {
         }
     }
 
+    // lista todas las reservas de la BD
     public List<Reserva> listar() throws SQLException {
         List<Reserva> lista = new ArrayList<>();
         String sql = "SELECT * FROM Reserva";
@@ -36,6 +37,7 @@ public class ReservaDAO {
         return lista;
     }
 
+    // elimina reserva de la BD
     public void eliminar(int id) throws SQLException {
         String sql = "DELETE FROM Reserva WHERE R_ID = ?";
         try (Connection con = Util.getConnection();
@@ -45,6 +47,7 @@ public class ReservaDAO {
         }
     }
 
+    // convierte fila de la BD en objeto Reserva
     private Reserva mapear(ResultSet rs) throws SQLException {
         return new Reserva(
             rs.getInt("R_ID"),

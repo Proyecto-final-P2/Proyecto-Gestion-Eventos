@@ -7,6 +7,7 @@ import java.util.List;
 
 public class ServicioDAO {
 
+    // inserta servicio en la BD
     public void insertar(Servicio s) throws SQLException {
         String sql = "INSERT INTO Servicios (SE_Tipo, SE_Proveedor, SE_Costo, SE_Cantidad, SE_Estado) VALUES (?,?,?,?,?)";
         try (Connection con = Util.getConnection();
@@ -20,6 +21,7 @@ public class ServicioDAO {
         }
     }
 
+    // lista servicios de la BD
     public List<Servicio> listar() throws SQLException {
         List<Servicio> lista = new ArrayList<>();
         String sql = "SELECT * FROM Servicios";
@@ -31,6 +33,7 @@ public class ServicioDAO {
         return lista;
     }
 
+    // actualiza servicio en la BD
     public void actualizar(Servicio s) throws SQLException {
         String sql = "UPDATE Servicios SET SE_Tipo=?, SE_Proveedor=?, SE_Costo=?, SE_Cantidad=?, SE_Estado=? WHERE SE_ID=?";
         try (Connection con = Util.getConnection();
@@ -45,6 +48,7 @@ public class ServicioDAO {
         }
     }
 
+    // elimina servicio de la BD
     public void eliminar(int id) throws SQLException {
         String sql = "DELETE FROM Servicios WHERE SE_ID = ?";
         try (Connection con = Util.getConnection();
@@ -54,6 +58,7 @@ public class ServicioDAO {
         }
     }
 
+    // convierte fila de la BD en objeto Servicio
     private Servicio mapear(ResultSet rs) throws SQLException {
         return new Servicio(
             rs.getInt("SE_ID"),

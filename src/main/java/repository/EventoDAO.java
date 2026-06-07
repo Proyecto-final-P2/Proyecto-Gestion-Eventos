@@ -7,6 +7,7 @@ import java.util.List;
 
 public class EventoDAO {
 
+    // inserta evento en BD
     public void insertar(Evento e) throws SQLException {
         String sql = "INSERT INTO Evento (E_Fecha, E_Horario, E_Tipo, E_CantInvitados, E_Estado, E_CostoFinal, Cliente_C_ID, Salon_SA_ID) VALUES (?,?,?,?,?,?,?,?)";
         try (Connection con = Util.getConnection();
@@ -23,6 +24,7 @@ public class EventoDAO {
         }
     }
 
+    // trae todos los eventos de la BD
     public List<Evento> listar() throws SQLException {
         List<Evento> lista = new ArrayList<>();
         String sql = "SELECT * FROM Evento";
@@ -34,6 +36,7 @@ public class EventoDAO {
         return lista;
     }
 
+    // trae eventos de un cliente específico
     public List<Evento> listarPorCliente(int clienteId) throws SQLException {
         List<Evento> lista = new ArrayList<>();
         String sql = "SELECT * FROM Evento WHERE Cliente_C_ID = ?";
@@ -47,6 +50,7 @@ public class EventoDAO {
         return lista;
     }
 
+    // trae eventos por estado
     public List<Evento> listarPorEstado(String estado) throws SQLException {
         List<Evento> lista = new ArrayList<>();
         String sql = "SELECT * FROM Evento WHERE E_Estado = ?";
@@ -60,6 +64,7 @@ public class EventoDAO {
         return lista;
     }
 
+    // actualiza evento en BD
     public void actualizar(Evento e) throws SQLException {
         String sql = "UPDATE Evento SET E_Fecha=?, E_Horario=?, E_Tipo=?, E_CantInvitados=?, E_Estado=?, E_CostoFinal=? WHERE E_ID=?";
         try (Connection con = Util.getConnection();
@@ -75,6 +80,7 @@ public class EventoDAO {
         }
     }
 
+    // elimina evento de la BD
     public void eliminar(int id) throws SQLException {
         String sql = "DELETE FROM Evento WHERE E_ID = ?";
         try (Connection con = Util.getConnection();
@@ -84,6 +90,7 @@ public class EventoDAO {
         }
     }
 
+    // convierte una fila de la BD en un objeto Evento
     private Evento mapear(ResultSet rs) throws SQLException {
         Evento e = new Evento();
         e.setId(rs.getInt("E_ID"));

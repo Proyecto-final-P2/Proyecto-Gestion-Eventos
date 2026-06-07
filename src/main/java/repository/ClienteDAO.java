@@ -7,6 +7,7 @@ import java.util.List;
 
 public class ClienteDAO {
 
+    // inserta cliente en BD
     public void insertar(Cliente c) throws SQLException {
         String sql = "INSERT INTO Cliente (C_DNI, C_NombreApellido, C_Email, C_Telefono) VALUES (?,?,?,?)";
         try (Connection con = Util.getConnection();
@@ -19,6 +20,7 @@ public class ClienteDAO {
         }
     }
 
+    // trae todos los clientes de la BD
     public List<Cliente> listar() throws SQLException {
         List<Cliente> lista = new ArrayList<>();
         String sql = "SELECT * FROM Cliente";
@@ -32,6 +34,7 @@ public class ClienteDAO {
         return lista;
     }
 
+    // busca un cliente por su ID exacto
     public Cliente buscarPorId(int id) throws SQLException {
         String sql = "SELECT * FROM Cliente WHERE C_ID = ?";
         try (Connection con = Util.getConnection();
@@ -44,6 +47,7 @@ public class ClienteDAO {
         return null;
     }
 
+    // busca clientes que contengan ese texto en su nombre
     public List<Cliente> buscarPorNombre(String nombre) throws SQLException {
         List<Cliente> lista = new ArrayList<>();
         String sql = "SELECT * FROM Cliente WHERE C_NombreApellido LIKE ?";
@@ -57,6 +61,7 @@ public class ClienteDAO {
         return lista;
     }
 
+    // actualiza los datos de un cliente existente en la BD
     public void actualizar(Cliente c) throws SQLException {
         String sql = "UPDATE Cliente SET C_DNI=?, C_NombreApellido=?, C_Email=?, C_Telefono=? WHERE C_ID=?";
         try (Connection con = Util.getConnection();
@@ -70,6 +75,7 @@ public class ClienteDAO {
         }
     }
 
+    // borra un cliente de la BD
     public void eliminar(int id) throws SQLException {
         String sql = "DELETE FROM Cliente WHERE C_ID = ?";
         try (Connection con = Util.getConnection();
@@ -79,7 +85,7 @@ public class ClienteDAO {
         }
     }
 
-    // Mapea un ResultSet a un objeto Cliente
+    // convierte una fila de la BD en un objeto Cliente que Java pueda entender
     private Cliente mapear(ResultSet rs) throws SQLException {
         return new Cliente(
             rs.getInt("C_ID"),

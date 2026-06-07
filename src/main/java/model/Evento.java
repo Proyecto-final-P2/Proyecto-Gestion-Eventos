@@ -3,7 +3,9 @@ package model;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
+// plantilla para crear eventos
 public class Evento {
+    // atributos
     private int       id;
     private LocalDate fecha;
     private LocalTime horario;
@@ -14,8 +16,9 @@ public class Evento {
     private int       clienteId;
     private int       salonId;
 
-    public Evento() {}
+    public Evento() {} // crea un evento en blanco
 
+    // crea evento con todos los datos
     public Evento(int id, LocalDate fecha, LocalTime horario, String tipo,
                   int cantInvitados, String estado, double costoFinal,
                   int clienteId, int salonId) {
@@ -30,6 +33,7 @@ public class Evento {
         this.salonId       = salonId;
     }
 
+    // Getters
     public int       getId()            { return id; }
     public LocalDate getFecha()         { return fecha; }
     public LocalTime getHorario()       { return horario; }
@@ -40,6 +44,7 @@ public class Evento {
     public int       getClienteId()     { return clienteId; }
     public int       getSalonId()       { return salonId; }
 
+    // Setters
     public void setId(int id)                   { this.id = id; }
     public void setFecha(LocalDate f)           { this.fecha = f; }
     public void setHorario(LocalTime h)         { this.horario = h; }
@@ -50,6 +55,6 @@ public class Evento {
     public void setClienteId(int id)            { this.clienteId = id; }
     public void setSalonId(int id)              { this.salonId = id; }
 
-    @Override
+    @Override //mostrar tipo y fecha del evento
     public String toString() { return tipo + " - " + fecha; }
 }

@@ -3,15 +3,18 @@ package model;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
+// plantilla para crear reservas
 public class Reserva {
+    // atributos
     private int       id;
     private LocalDate fecha;
     private LocalTime horaInicio;
     private LocalTime horaFin;
     private double    monto;
 
-    public Reserva() {}
+    public Reserva() {} // crea una reserva en blanco
 
+    // crea reserva con todos los datos
     public Reserva(int id, LocalDate fecha, LocalTime horaInicio, LocalTime horaFin, double monto) {
         this.id         = id;
         this.fecha      = fecha;
@@ -20,18 +23,20 @@ public class Reserva {
         this.monto      = monto;
     }
 
+    // Getters
     public int       getId()         { return id; }
     public LocalDate getFecha()      { return fecha; }
     public LocalTime getHoraInicio() { return horaInicio; }
     public LocalTime getHoraFin()    { return horaFin; }
     public double    getMonto()      { return monto; }
 
+    // Setters
     public void setId(int id)                { this.id = id; }
     public void setFecha(LocalDate f)        { this.fecha = f; }
     public void setHoraInicio(LocalTime h)   { this.horaInicio = h; }
     public void setHoraFin(LocalTime h)      { this.horaFin = h; }
     public void setMonto(double m)           { this.monto = m; }
 
-    @Override
+    @Override //mostrar id y fecha de reserva
     public String toString() { return "Reserva #" + id + " - " + fecha; }
 }

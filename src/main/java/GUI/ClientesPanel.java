@@ -115,6 +115,7 @@ public class ClientesPanel extends JPanel {
         add(formulario, BorderLayout.EAST);
     }
 
+    // carga todos los clientes de la bd a la tabla visual
     private void cargarTabla() {
         modeloTabla.setRowCount(0);
         List<Cliente> clientes = controller.listar();
@@ -125,6 +126,7 @@ public class ClientesPanel extends JPanel {
         }
     }
 
+    // filtra la tabla usando el texto del buscador
     private void buscar() {
         String texto = txtBuscar.getText().trim();
         if (texto.isEmpty()) { cargarTabla(); return; }
@@ -137,6 +139,7 @@ public class ClientesPanel extends JPanel {
         }
     }
 
+    // cuando haces clic en una fila, copia los datos al formulario
     private void cargarFormularioDesdeTabla() {
         int fila = tabla.getSelectedRow();
         if (fila < 0) return;
@@ -146,6 +149,7 @@ public class ClientesPanel extends JPanel {
         txtTelefono.setText(modeloTabla.getValueAt(fila, 4).toString());
     }
 
+    // toma los datos del formulario y pide al controlador guardarlos
     private void agregar() {
         if (!validarCampos()) return;
         Cliente c = new Cliente();
@@ -156,6 +160,7 @@ public class ClientesPanel extends JPanel {
         if (controller.agregar(c)) { cargarTabla(); limpiarFormulario(); }
     }
 
+    // toma los datos modificados y actualiza al cliente seleccionado
     private void editar() {
         int fila = tabla.getSelectedRow();
         if (fila < 0) { JOptionPane.showMessageDialog(this, "Seleccioná un cliente de la tabla."); return; }
@@ -169,6 +174,7 @@ public class ClientesPanel extends JPanel {
         if (controller.actualizar(c)) { cargarTabla(); limpiarFormulario(); }
     }
 
+    // le pide al controlador borrar el cliente seleccionado
     private void eliminar() {
         int fila = tabla.getSelectedRow();
         if (fila < 0) { JOptionPane.showMessageDialog(this, "Seleccioná un cliente de la tabla."); return; }
@@ -176,12 +182,14 @@ public class ClientesPanel extends JPanel {
         if (controller.eliminar(id)) { cargarTabla(); limpiarFormulario(); }
     }
 
+    // vacia todos los cuadritos de texto
     private void limpiarFormulario() {
         txtDni.setText(""); txtNombre.setText("");
         txtEmail.setText(""); txtTelefono.setText("");
         tabla.clearSelection();
     }
 
+    // revisa que no dejes campos vacios y que el dni sea numero
     private boolean validarCampos() {
         if (txtDni.getText().trim().isEmpty() || txtNombre.getText().trim().isEmpty()
             || txtEmail.getText().trim().isEmpty() || txtTelefono.getText().trim().isEmpty()) {
