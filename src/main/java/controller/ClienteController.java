@@ -30,6 +30,22 @@ public class ClienteController {
         catch (Exception ex) { JOptionPane.showMessageDialog(null, "Error: " + ex.getMessage()); return false; }
     }
 
+    // registra un cliente validando unicidad de dni y email
+    public String registrarCliente(Cliente c) {
+        try {
+            if (dao.buscarPorDni(c.getDni()) != null) {
+                return "Error: El DNI ya está registrado.";
+            }
+            if (dao.buscarPorEmail(c.getEmail()) != null) {
+                return "Error: El Email ya está registrado.";
+            }
+            dao.insertar(c);
+            return "OK";
+        } catch (Exception ex) {
+            return "Error en la base de datos: " + ex.getMessage();
+        }
+    }
+
     // actualiza los datos de un cliente que ya existe
     public boolean actualizar(Cliente c) {
         try { dao.actualizar(c); JOptionPane.showMessageDialog(null, "Cliente actualizado."); return true; }

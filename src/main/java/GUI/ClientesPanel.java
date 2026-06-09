@@ -71,10 +71,11 @@ public class ClientesPanel extends JPanel {
         // --- FORMULARIO (este) ---
         JPanel formulario = new JPanel(new GridBagLayout());
         formulario.setBorder(BorderFactory.createTitledBorder("Datos del cliente"));
-        formulario.setPreferredSize(new Dimension(250, 0));
+        formulario.setPreferredSize(new Dimension(280, 0)); // tamaño de la columna derecha
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.weightx = 1.0; // Esto permite que ocupen todo el espacio vacío a la derecha
+        gbc.insets = new Insets(8, 5, 8, 5);
         gbc.gridx = 0;
 
         txtDni      = new JTextField();
@@ -85,6 +86,7 @@ public class ClientesPanel extends JPanel {
         String[] labels = {"DNI:", "Nombre y Apellido:", "Email:", "Teléfono:"};
         JTextField[] fields = {txtDni, txtNombre, txtEmail, txtTelefono};
         for (int i = 0; i < labels.length; i++) {
+            fields[i].setPreferredSize(new Dimension(0, 40)); // tamaño de los campos
             gbc.gridy = i * 2;
             formulario.add(new JLabel(labels[i]), gbc);
             gbc.gridy = i * 2 + 1;
@@ -98,9 +100,7 @@ public class ClientesPanel extends JPanel {
         btnLimpiar  = new JButton("Limpiar");
 
         btnAgregar.setBackground(new Color(70, 160, 70));
-        btnAgregar.setForeground(Color.WHITE);
         btnEliminar.setBackground(new Color(200, 60, 60));
-        btnEliminar.setForeground(Color.WHITE);
 
         gbc.gridy = 8; formulario.add(btnAgregar, gbc);
         gbc.gridy = 9; formulario.add(btnEditar, gbc);

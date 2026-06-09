@@ -1,5 +1,6 @@
 -- Crear base de datos
-CREATE DATABASE salonDeEventos;
+SET NAMES utf8mb4;
+CREATE DATABASE IF NOT EXISTS salonDeEventos;
 USE salonDeEventos;
 
 -- Tabla Salon
@@ -32,7 +33,7 @@ CREATE TABLE Pago (
 
 -- Tabla Cliente
 CREATE TABLE Cliente (
-  C_ID INT NOT NULL PRIMARY KEY,
+  C_ID INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   C_DNI INT NOT NULL,
   C_NombreApellido VARCHAR(45) NOT NULL,
   C_Email VARCHAR(255) NOT NULL,
@@ -77,7 +78,7 @@ CREATE TABLE Evento (
 
 -- Tabla Asiste
 CREATE TABLE Asiste (
-  Invitado_IN_ID INT NULL,
+  Invitado_IN_ID INT NOT NULL,
   Evento_E_ID INT NOT NULL,
   PRIMARY KEY (Invitado_IN_ID, Evento_E_ID),
   FOREIGN KEY (Invitado_IN_ID) REFERENCES Invitado (IN_ID),

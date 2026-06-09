@@ -11,6 +11,7 @@ public class Login extends JFrame {
     private JTextField     txtEmail;
     private JPasswordField txtPassword;
     private JButton        btnIngresar;
+    private JButton        btnRegistrarse;
     private LoginController controller;
 
     public Login() {
@@ -52,13 +53,23 @@ public class Login extends JFrame {
         txtPassword = new JPasswordField(20);
         panel.add(txtPassword, gbc);
 
-        // Botón
+        // Botones
         gbc.gridy = 5;
+        
+        JPanel btnPanel = new JPanel(new GridLayout(1, 2, 10, 0));
+        
         btnIngresar = new JButton("Ingresar");
         btnIngresar.setBackground(new Color(70, 130, 180));
-        btnIngresar.setForeground(Color.WHITE);
         btnIngresar.setFont(new Font("Arial", Font.BOLD, 14));
-        panel.add(btnIngresar, gbc);
+        
+        btnRegistrarse = new JButton("Registrarse");
+        btnRegistrarse.setBackground(new Color(46, 139, 87));
+        btnRegistrarse.setFont(new Font("Arial", Font.BOLD, 14));
+
+        btnPanel.add(btnIngresar);
+        btnPanel.add(btnRegistrarse);
+        
+        panel.add(btnPanel, gbc);
 
         // accion del boton: le pasa el email y clave al controlador
         btnIngresar.addActionListener(e ->
@@ -69,6 +80,12 @@ public class Login extends JFrame {
         txtPassword.addActionListener(e ->
             controller.iniciarSesion(txtEmail.getText(), new String(txtPassword.getPassword()))
         );
+
+        // accion del boton registrarse: abre la otra ventana
+        btnRegistrarse.addActionListener(e -> {
+            this.setVisible(false);
+            new RegistroCliente(this).setVisible(true);
+        });
 
         add(panel);
     }
