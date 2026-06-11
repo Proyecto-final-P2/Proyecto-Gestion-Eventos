@@ -1,50 +1,47 @@
 package GUI;
 
-import controller.ClienteController;
-import model.Cliente;
+import controller.AdministradorController;
+import model.Administrador;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.regex.Pattern;
 
-public class RegistroCliente extends JFrame {
+public class RegistroAdministrador extends JFrame {
 
     private JTextField txtNombre;
     private JTextField txtApellido;
     private JTextField txtEmail;
-    private JTextField txtTelefono;
-    private JTextField txtDni;
+    private JPasswordField txtPassword;
     private JButton btnRegistrar;
     private JButton btnCancelar;
-    private ClienteController controller;
+    private AdministradorController controller;
     private Login loginFrame;
 
-    public RegistroCliente(Login loginFrame) {
+    public RegistroAdministrador(Login loginFrame) {
         this.loginFrame = loginFrame;
-        this.controller = new ClienteController();
+        this.controller = new AdministradorController();
         initComponents();
     }
 
     private void initComponents() {
-        setTitle("Gestor de Eventos - Registro de Cliente");
+        setTitle("Gestor de Eventos - Registro de Administrador");
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-        setSize(450, 550); // tamaño de la ventana
+        setSize(450, 480);
         setLocationRelativeTo(null);
         setResizable(false);
 
         JPanel panel = new JPanel(new GridBagLayout());
-        panel.setBorder(BorderFactory.createEmptyBorder(20, 50, 20, 50)); // bordes del panel
+        panel.setBorder(BorderFactory.createEmptyBorder(20, 50, 20, 50));
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(8, 0, 8, 0); // espacio entre componentes
+        gbc.insets = new Insets(8, 0, 8, 0);
 
         // Título
-        JLabel lblTitulo = new JLabel("Registro de Cliente", SwingConstants.CENTER);
-        lblTitulo.setFont(new Font("Arial", Font.BOLD, 22));
+        JLabel lblTitulo = new JLabel("Registro de Administrador", SwingConstants.CENTER);
+        lblTitulo.setFont(new Font("Arial", Font.BOLD, 20));
         gbc.gridx = 0; gbc.gridy = 0; gbc.gridwidth = 2;
         panel.add(lblTitulo, gbc);
 
-        // Dimensión preferida para hacer los cuadros de texto más altos
         Dimension txtSize = new Dimension(0, 30);
 
         // Nombre
@@ -71,21 +68,13 @@ public class RegistroCliente extends JFrame {
         txtEmail.setPreferredSize(txtSize);
         panel.add(txtEmail, gbc);
 
-        // Teléfono
+        // Contraseña
         gbc.gridy = 7;
-        panel.add(new JLabel("Teléfono:"), gbc);
+        panel.add(new JLabel("Contraseña:"), gbc);
         gbc.gridy = 8;
-        txtTelefono = new JTextField(20);
-        txtTelefono.setPreferredSize(txtSize);
-        panel.add(txtTelefono, gbc);
-
-        // DNI
-        gbc.gridy = 9;
-        panel.add(new JLabel("DNI:"), gbc);
-        gbc.gridy = 10;
-        txtDni = new JTextField(20);
-        txtDni.setPreferredSize(txtSize);
-        panel.add(txtDni, gbc);
+        txtPassword = new JPasswordField(20);
+        txtPassword.setPreferredSize(txtSize);
+        panel.add(txtPassword, gbc);
 
         // Panel de Botones
         JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 0));
@@ -101,7 +90,7 @@ public class RegistroCliente extends JFrame {
         btnPanel.add(btnRegistrar);
         btnPanel.add(btnCancelar);
 
-        gbc.gridy = 11; gbc.gridwidth = 2;
+        gbc.gridy = 9; gbc.gridwidth = 2;
         gbc.insets = new Insets(20, 0, 0, 0);
         panel.add(btnPanel, gbc);
 
@@ -128,43 +117,24 @@ public class RegistroCliente extends JFrame {
         String nombre = txtNombre.getText().trim();
         String apellido = txtApellido.getText().trim();
         String email = txtEmail.getText().trim();
-        String telefono = txtTelefono.getText().trim();
-        String dniStr = txtDni.getText().trim();
+        String password = new String(txtPassword.getPassword()).trim();
 
-        // Validación: Campos vacíos
-        if (nombre.isEmpty() || apellido.isEmpty() || email.isEmpty() || telefono.isEmpty() || dniStr.isEmpty()) {
+        if (nombre.isEmpty() || apellido.isEmpty() || email.isEmpty() || password.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Todos los campos son obligatorios.", "Error de Validación", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
-        // Validación: Formato de Email
         if (!email.contains("@") || !email.contains(".")) {
             JOptionPane.showMessageDialog(this, "El email tiene un formato inválido.", "Error de Validación", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
-        // Validación: Teléfono (solo números, max 15)
-        if (!Pattern.matches("\\d{1,15}", telefono)) {
-            JOptionPane.showMessageDialog(this, "El teléfono debe contener solo números (máximo 15).", "Error de Validación", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
+        Administrador nuevoAdmin = new Administrador();
+        nuevoAdmin.setNombreApellido(nombre + " " + apellido);
+        nuevoAdmin.setEmail(email);
+        nuevoAdmin.setPassword(password);
 
-        // Validación: DNI (solo números)
-        int dni;
-        try {
-            dni = Integer.parseInt(dniStr);
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "El DNI debe ser numérico.", "Error de Validación", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
-        Cliente nuevoCliente = new Cliente();
-        nuevoCliente.setNombreApellido(nombre + " " + apellido);
-        nuevoCliente.setEmail(email);
-        nuevoCliente.setTelefono(telefono);
-        nuevoCliente.setDni(dni);
-
-        String resultado = controller.registrarCliente(nuevoCliente);
+        String resultado = controller.registrar(nuevoAdmin);
 
         if (resultado.equals("OK")) {
             JOptionPane.showMessageDialog(this, "Registro completado con éxito.", "Éxito", JOptionPane.INFORMATION_MESSAGE);

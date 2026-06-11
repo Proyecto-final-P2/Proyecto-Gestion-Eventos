@@ -40,6 +40,14 @@ CREATE TABLE Cliente (
   C_Telefono VARCHAR(15) NOT NULL
 );
 
+-- Tabla Administrador
+CREATE TABLE Administrador (
+  A_ID INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  A_NombreApellido VARCHAR(45) NOT NULL,
+  A_Email VARCHAR(255) NOT NULL,
+  A_Password VARCHAR(255) NOT NULL
+);
+
 -- Tabla Servicios
 CREATE TABLE Servicios (
   SE_ID INT NOT NULL PRIMARY KEY,
@@ -112,6 +120,11 @@ VALUES
 (8, 43218765, 'Lucía Torres', 'lucia.torres@example.com', 4567890122),
 (9, 65432187, 'Antonio Díaz', 'antonio.diaz@example.com', 5678901233),
 (10, 76543219, 'Elena Pérez', 'elena.perez@example.com', 6789012344);
+
+-- Datos para la tabla Administrador
+INSERT INTO Administrador (A_ID, A_NombreApellido, A_Email, A_Password)
+VALUES 
+(1, 'Admin Principal', 'admin@admin.com', 'admin123');
 
 -- Datos para la tabla Reserva
 INSERT INTO Reserva (R_ID, R_Fecha, R_HoraInicio, R_HoraFin, R_Monto)

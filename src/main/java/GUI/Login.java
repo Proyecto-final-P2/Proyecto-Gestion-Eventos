@@ -84,7 +84,7 @@ public class Login extends JFrame {
         // accion del boton registrarse: abre la otra ventana
         btnRegistrarse.addActionListener(e -> {
             this.setVisible(false);
-            new RegistroCliente(this).setVisible(true);
+            new RegistroAdministrador(this).setVisible(true);
         });
 
         add(panel);

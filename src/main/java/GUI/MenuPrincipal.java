@@ -1,17 +1,17 @@
 package GUI;
 
-import model.Cliente;
+import model.Administrador;
 import javax.swing.*;
 import java.awt.*;
 
 public class MenuPrincipal extends JFrame {
 
-    private final Cliente clienteActivo;
+    private final Administrador adminActivo;
     private JPanel panelContenido;
 
-    // recibe al cliente que acaba de iniciar sesion
-    public MenuPrincipal(Cliente clienteActivo) {
-        this.clienteActivo = clienteActivo;
+    // recibe al administrador que acaba de iniciar sesion
+    public MenuPrincipal(Administrador adminActivo) {
+        this.adminActivo = adminActivo;
         initComponents();
     }
 
@@ -30,7 +30,7 @@ public class MenuPrincipal extends JFrame {
         sidebar.setBorder(BorderFactory.createEmptyBorder(20, 10, 20, 10));
 
         // Bienvenida
-        JLabel lblBienvenida = new JLabel("Hola, " + clienteActivo.getNombreApellido().split(" ")[0]);
+        JLabel lblBienvenida = new JLabel("Hola, " + adminActivo.getNombreApellido().split(" ")[0]);
         lblBienvenida.setForeground(Color.WHITE);
         lblBienvenida.setFont(new Font("Arial", Font.BOLD, 14));
         lblBienvenida.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -46,6 +46,11 @@ public class MenuPrincipal extends JFrame {
         }
 
         sidebar.add(Box.createVerticalGlue());
+
+        // Botón Administradores
+        JButton btnAdmins = crearBotonMenu("Administradores");
+        sidebar.add(btnAdmins);
+        sidebar.add(Box.createRigidArea(new Dimension(0, 5)));
 
         // Botón cerrar sesión
         JButton btnSalir = crearBotonMenu("Cerrar Sesión");
@@ -97,6 +102,7 @@ public class MenuPrincipal extends JFrame {
             case "Invitados"   -> panel = new InvitadosPanel();
             case "Pagos"       -> panel = new PagosPanel();
             case "Reportes"    -> panel = new ReportesPanel();
+            case "Administradores" -> panel = new AdministradoresPanel();
             default            -> panel = new JPanel();
         }
         panelContenido.add(panel, BorderLayout.CENTER);
