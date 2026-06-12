@@ -68,7 +68,6 @@ public class AdministradoresPanel extends JPanel {
         // --- FORMULARIO (este) ---
         JPanel formulario = new JPanel(new GridBagLayout());
         formulario.setBorder(BorderFactory.createTitledBorder("Datos del Administrador"));
-        formulario.setPreferredSize(new Dimension(280, 0));
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 1.0;
@@ -82,7 +81,7 @@ public class AdministradoresPanel extends JPanel {
         String[] labels = {"Nombre y Apellido:", "Email:", "Contraseña:"};
         JComponent[] fields = {txtNombre, txtEmail, txtPassword};
         for (int i = 0; i < labels.length; i++) {
-            fields[i].setPreferredSize(new Dimension(0, 40));
+            fields[i].setPreferredSize(new Dimension(250, 40));
             gbc.gridy = i * 2;
             formulario.add(new JLabel(labels[i]), gbc);
             gbc.gridy = i * 2 + 1;
@@ -108,7 +107,12 @@ public class AdministradoresPanel extends JPanel {
         btnEliminar.addActionListener(e -> eliminar());
         btnLimpiar.addActionListener(e  -> limpiarFormulario());
 
-        add(formulario, BorderLayout.EAST);
+        JScrollPane scrollForm = new JScrollPane(formulario);
+        scrollForm.setBorder(null);
+        scrollForm.setPreferredSize(new Dimension(280, 0));
+        scrollForm.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        scrollForm.getVerticalScrollBar().setUnitIncrement(16);
+        add(scrollForm, BorderLayout.EAST);
     }
 
     private void cargarTabla() {
