@@ -20,6 +20,15 @@ public class EventoController {
         }
     }
 
+    public List<Evento> listarPorCliente(int clienteId) {
+        try {
+            return dao.listarPorCliente(clienteId);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(null, "Error al listar eventos del cliente: " + ex.getMessage());
+            return List.of();
+        }
+    }
+
     // busca eventos que coincidan con un tipo
     public List<Evento> buscar(String tipo) {
         try {

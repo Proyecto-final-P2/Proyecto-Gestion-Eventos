@@ -1,6 +1,7 @@
 package GUI;
 
 import controller.LoginController;
+import model.Cliente;
 import javax.swing.*;
 import java.awt.*;
 
@@ -11,7 +12,8 @@ public class Login extends JFrame {
     private JTextField     txtEmail;
     private JPasswordField txtPassword;
     private JButton        btnIngresar;
-    private JButton        btnRegistrarse;
+    private JTextField     txtDni;
+    private JButton        btnAccederCliente;
     private LoginController controller;
 
     public Login() {
@@ -23,7 +25,7 @@ public class Login extends JFrame {
     private void initComponents() {
         setTitle("Gestor de Eventos - Iniciar Sesión");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setSize(400, 300);
+        setSize(400, 450);
         setLocationRelativeTo(null);
         setResizable(false);
 
@@ -56,20 +58,10 @@ public class Login extends JFrame {
         // Botones
         gbc.gridy = 5;
         
-        JPanel btnPanel = new JPanel(new GridLayout(1, 2, 10, 0));
-        
         btnIngresar = new JButton("Ingresar");
-        btnIngresar.setBackground(new Color(70, 130, 180));
         btnIngresar.setFont(new Font("Arial", Font.BOLD, 14));
         
-        btnRegistrarse = new JButton("Registrarse");
-        btnRegistrarse.setBackground(new Color(46, 139, 87));
-        btnRegistrarse.setFont(new Font("Arial", Font.BOLD, 14));
-
-        btnPanel.add(btnIngresar);
-        btnPanel.add(btnRegistrarse);
-        
-        panel.add(btnPanel, gbc);
+        panel.add(btnIngresar, gbc);
 
         // accion del boton: le pasa el email y clave al controlador
         btnIngresar.addActionListener(e ->
@@ -81,10 +73,38 @@ public class Login extends JFrame {
             controller.iniciarSesion(txtEmail.getText(), new String(txtPassword.getPassword()))
         );
 
-        // accion del boton registrarse: abre la otra ventana
-        btnRegistrarse.addActionListener(e -> {
-            this.setVisible(false);
-            new RegistroAdministrador(this).setVisible(true);
+        // --- Separador ---
+        gbc.gridy = 6;
+        panel.add(new JSeparator(), gbc);
+
+        // --- Login Cliente ---
+        gbc.gridy = 7;
+        JLabel lblCliente = new JLabel("¿Sos cliente? Ingresá tu DNI", SwingConstants.CENTER);
+        lblCliente.setFont(new Font("Arial", Font.BOLD, 14));
+        panel.add(lblCliente, gbc);
+
+        gbc.gridy = 8;
+        txtDni = new JTextField(20);
+        panel.add(txtDni, gbc);
+
+        gbc.gridy = 9;
+        btnAccederCliente = new JButton("Acceder como cliente");
+        btnAccederCliente.setFont(new Font("Arial", Font.BOLD, 14));
+        panel.add(btnAccederCliente, gbc);
+
+        btnAccederCliente.addActionListener(e -> {
+            try {
+                int dni = Integer.parseInt(txtDni.getText().trim());
+                Cliente cliente = controller.loginCliente(dni);
+                if (cliente == null) {
+                    JOptionPane.showMessageDialog(this, "DNI no encontrado", "Error", JOptionPane.ERROR_MESSAGE);
+                } else {
+                    dispose();
+                    new MenuCliente(cliente).setVisible(true);
+                }
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(this, "El DNI debe ser numérico", "Error", JOptionPane.ERROR_MESSAGE);
+            }
         });
 
         add(panel);
