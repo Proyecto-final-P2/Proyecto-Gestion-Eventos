@@ -1,10 +1,11 @@
 -- Crear base de datos
+SET NAMES utf8mb4;
 CREATE DATABASE IF NOT EXISTS salonDeEventos;
 USE salonDeEventos;
 
 -- Tabla Salon
 CREATE TABLE Salon (
-  SA_ID INT NOT NULL PRIMARY KEY,
+  SA_ID INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   SA_Direccion VARCHAR(45) NOT NULL,
   SA_Nombre VARCHAR(45) NOT NULL,
   SA_Capacidad INT NOT NULL,
@@ -32,11 +33,19 @@ CREATE TABLE Pago (
 
 -- Tabla Cliente
 CREATE TABLE Cliente (
-  C_ID INT NOT NULL PRIMARY KEY,
+  C_ID INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   C_DNI INT NOT NULL,
   C_NombreApellido VARCHAR(45) NOT NULL,
   C_Email VARCHAR(255) NOT NULL,
   C_Telefono VARCHAR(15) NOT NULL
+);
+
+-- Tabla Administrador
+CREATE TABLE Administrador (
+  A_ID INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  A_NombreApellido VARCHAR(45) NOT NULL,
+  A_Email VARCHAR(255) NOT NULL,
+  A_Password VARCHAR(255) NOT NULL
 );
 
 -- Tabla Servicios
@@ -62,7 +71,7 @@ CREATE TABLE Invitado (
 
 -- Tabla Evento
 CREATE TABLE Evento (
-  E_ID INT NOT NULL PRIMARY KEY,
+  E_ID INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   E_Fecha DATE NOT NULL,
   E_Horario TIME NOT NULL,
   E_Tipo VARCHAR(45) NOT NULL,
@@ -111,6 +120,11 @@ VALUES
 (8, 43218765, 'Lucia Torres', 'lucia.torres@example.com', 4567890122),
 (9, 65432187, 'Antonio Diaz', 'antonio.diaz@example.com', 5678901233),
 (10, 76543219, 'Elena Perez', 'elena.perez@example.com', 6789012344);
+
+-- Datos para la tabla Administrador
+INSERT INTO Administrador (A_ID, A_NombreApellido, A_Email, A_Password)
+VALUES 
+(1, 'Admin Principal', 'admin@admin.com', 'admin123');
 
 -- Datos para la tabla Reserva
 INSERT INTO Reserva (R_ID, R_Fecha, R_HoraInicio, R_HoraFin, R_Monto)

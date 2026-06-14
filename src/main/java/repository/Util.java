@@ -11,7 +11,8 @@ public class Util {
     private static final String USER     = "root";
     private static final String PASSWORD = "gestor123";
 
-    // Devuelve una nueva conexión a la BD. llave q usan los daos para entrar a la bd
+    // Devuelve una nueva conexión a la BD. llave q usan los daos para entrar a la
+    // bd
     public static Connection getConnection() throws SQLException {
         return DriverManager.getConnection(URL, USER, PASSWORD);
     }
