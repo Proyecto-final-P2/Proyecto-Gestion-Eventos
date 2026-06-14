@@ -65,6 +65,25 @@ public class InvitadoDAO {
         return lista;
     }
 
+    // busca invitados por DNI en un evento específico usando JOIN con Asiste
+    public List<Invitado> buscarPorDni(String dni, int eventoId) throws SQLException {
+        List<Invitado> lista = new ArrayList<>();
+        String sql = "SELECT i.* FROM Invitado i JOIN Asiste a ON i.IN_ID = a.Invitado_IN_ID WHERE a.Evento_E_ID = ? AND i.IN_DNI LIKE ?";
+        try (Connection con = Util.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, eventoId);
+            ps.setString(2, "%" + dni + "%");
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    Invitado inv = mapear(rs);
+                    inv.setEventoId(eventoId);
+                    lista.add(inv);
+                }
+            }
+        }
+        return lista;
+    }
+
     // lista invitados de un cliente específico (método existente, no se toca)
     public List<Invitado> listarPorCliente(int clienteId) throws SQLException {
         List<Invitado> lista = new ArrayList<>();
