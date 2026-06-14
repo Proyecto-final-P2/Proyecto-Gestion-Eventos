@@ -90,6 +90,33 @@ public class EventoDAO {
         }
     }
 
+    // busca un evento por su ID exacto en la BD
+    public Evento buscarPorId(int id) throws SQLException {
+        String sql = "SELECT * FROM Evento WHERE E_ID = ?";
+        try (Connection con = Util.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return mapear(rs);
+            }
+        }
+        return null;
+    }
+
+    // busca eventos por su tipo (coincidencia parcial)
+    public List<Evento> buscarPorTipo(String tipo) throws SQLException {
+        List<Evento> lista = new ArrayList<>();
+        String sql = "SELECT * FROM Evento WHERE E_Tipo LIKE ?";
+        try (Connection con = Util.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, "%" + tipo + "%");
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) lista.add(mapear(rs));
+            }
+        }
+        return lista;
+    }
+
     // convierte una fila de la BD en un objeto Evento
     private Evento mapear(ResultSet rs) throws SQLException {
         Evento e = new Evento();

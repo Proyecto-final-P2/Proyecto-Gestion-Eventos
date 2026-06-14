@@ -1,29 +1,26 @@
 package GUI;
 
-import controller.ClienteController;
-import model.Cliente;
+import controller.AdministradorController;
+import model.Administrador;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.List;
 
-/**
- * Panel de gestión de Clientes.
- * ESTRUCTURA MODELO: todos los demás paneles siguen este mismo patrón.
- */
-public class ClientesPanel extends JPanel {
+public class AdministradoresPanel extends JPanel {
 
-    private final ClienteController controller = new ClienteController();
+    private final AdministradorController controller = new AdministradorController();
 
     private JTable tabla;
     private DefaultTableModel modeloTabla;
     private JTextField txtBuscar;
 
     // Campos del formulario
-    private JTextField txtDni, txtNombre, txtEmail, txtTelefono;
-    private JButton    btnAgregar, btnEditar, btnEliminar, btnLimpiar;
+    private JTextField txtNombre, txtEmail;
+    private JPasswordField txtPassword;
+    private JButton btnAgregar, btnEditar, btnEliminar, btnLimpiar;
 
-    public ClientesPanel() {
+    public AdministradoresPanel() {
         setLayout(new BorderLayout(10, 10));
         setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
         initComponents();
@@ -32,12 +29,12 @@ public class ClientesPanel extends JPanel {
 
     private void initComponents() {
         // --- TÍTULO ---
-        JLabel titulo = new JLabel("Gestión de Clientes");
+        JLabel titulo = new JLabel("Gestión de Administradores");
         titulo.setFont(new Font("Arial", Font.BOLD, 18));
         add(titulo, BorderLayout.NORTH);
 
         // --- TABLA (centro) ---
-        String[] columnas = {"ID", "DNI", "Nombre y Apellido", "Email", "Teléfono"};
+        String[] columnas = {"ID", "Nombre y Apellido", "Email"};
         modeloTabla = new DefaultTableModel(columnas, 0) {
             @Override public boolean isCellEditable(int r, int c) { return false; }
         };
@@ -70,22 +67,21 @@ public class ClientesPanel extends JPanel {
 
         // --- FORMULARIO (este) ---
         JPanel formulario = new JPanel(new GridBagLayout());
-        formulario.setBorder(BorderFactory.createTitledBorder("Datos del cliente"));
+        formulario.setBorder(BorderFactory.createTitledBorder("Datos del Administrador"));
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.weightx = 1.0; // Esto permite que ocupen todo el espacio vacío a la derecha
+        gbc.weightx = 1.0;
         gbc.insets = new Insets(8, 5, 8, 5);
         gbc.gridx = 0;
 
-        txtDni      = new JTextField();
         txtNombre   = new JTextField();
         txtEmail    = new JTextField();
-        txtTelefono = new JTextField();
+        txtPassword = new JPasswordField();
 
-        String[] labels = {"DNI:", "Nombre y Apellido:", "Email:", "Teléfono:"};
-        JTextField[] fields = {txtDni, txtNombre, txtEmail, txtTelefono};
+        String[] labels = {"Nombre y Apellido:", "Email:", "Contraseña:"};
+        JComponent[] fields = {txtNombre, txtEmail, txtPassword};
         for (int i = 0; i < labels.length; i++) {
-            fields[i].setPreferredSize(new Dimension(250, 40)); // tamaño de los campos
+            fields[i].setPreferredSize(new Dimension(250, 40));
             gbc.gridy = i * 2;
             formulario.add(new JLabel(labels[i]), gbc);
             gbc.gridy = i * 2 + 1;
@@ -101,10 +97,10 @@ public class ClientesPanel extends JPanel {
         btnAgregar.setBackground(new Color(70, 160, 70));
         btnEliminar.setBackground(new Color(200, 60, 60));
 
-        gbc.gridy = 8; formulario.add(btnAgregar, gbc);
-        gbc.gridy = 9; formulario.add(btnEditar, gbc);
-        gbc.gridy = 10; formulario.add(btnEliminar, gbc);
-        gbc.gridy = 11; formulario.add(btnLimpiar, gbc);
+        gbc.gridy = 6; formulario.add(btnAgregar, gbc);
+        gbc.gridy = 7; formulario.add(btnEditar, gbc);
+        gbc.gridy = 8; formulario.add(btnEliminar, gbc);
+        gbc.gridy = 9; formulario.add(btnLimpiar, gbc);
 
         btnAgregar.addActionListener(e  -> agregar());
         btnEditar.addActionListener(e   -> editar());
@@ -119,89 +115,100 @@ public class ClientesPanel extends JPanel {
         add(scrollForm, BorderLayout.EAST);
     }
 
-    // carga todos los clientes de la bd a la tabla visual
     private void cargarTabla() {
         modeloTabla.setRowCount(0);
-        List<Cliente> clientes = controller.listar();
-        for (Cliente c : clientes) {
+        List<Administrador> admins = controller.listar();
+        for (Administrador a : admins) {
             modeloTabla.addRow(new Object[]{
-                c.getId(), c.getDni(), c.getNombreApellido(), c.getEmail(), c.getTelefono()
+                a.getId(), a.getNombreApellido(), a.getEmail()
             });
         }
     }
 
-    // filtra la tabla usando el texto del buscador
     private void buscar() {
         String texto = txtBuscar.getText().trim();
         if (texto.isEmpty()) { cargarTabla(); return; }
         modeloTabla.setRowCount(0);
-        List<Cliente> resultados = controller.buscar(texto);
-        for (Cliente c : resultados) {
+        List<Administrador> resultados = controller.buscar(texto);
+        for (Administrador a : resultados) {
             modeloTabla.addRow(new Object[]{
-                c.getId(), c.getDni(), c.getNombreApellido(), c.getEmail(), c.getTelefono()
+                a.getId(), a.getNombreApellido(), a.getEmail()
             });
         }
     }
 
-    // cuando haces clic en una fila, copia los datos al formulario
     private void cargarFormularioDesdeTabla() {
         int fila = tabla.getSelectedRow();
         if (fila < 0) return;
-        txtDni.setText(modeloTabla.getValueAt(fila, 1).toString());
-        txtNombre.setText(modeloTabla.getValueAt(fila, 2).toString());
-        txtEmail.setText(modeloTabla.getValueAt(fila, 3).toString());
-        txtTelefono.setText(modeloTabla.getValueAt(fila, 4).toString());
+        txtNombre.setText(modeloTabla.getValueAt(fila, 1).toString());
+        txtEmail.setText(modeloTabla.getValueAt(fila, 2).toString());
+        // Al seleccionar de la tabla no cargamos la contraseña por seguridad,
+        // pero la limpiamos por si quiere sobreescribirla
+        txtPassword.setText("");
     }
 
-    // toma los datos del formulario y pide al controlador guardarlos
     private void agregar() {
-        if (!validarCampos()) return;
-        Cliente c = new Cliente();
-        c.setDni(Integer.parseInt(txtDni.getText().trim()));
-        c.setNombreApellido(txtNombre.getText().trim());
-        c.setEmail(txtEmail.getText().trim());
-        c.setTelefono(txtTelefono.getText().trim());
-        if (controller.agregar(c)) { cargarTabla(); limpiarFormulario(); }
+        if (!validarCampos(true)) return;
+        Administrador a = new Administrador();
+        a.setNombreApellido(txtNombre.getText().trim());
+        a.setEmail(txtEmail.getText().trim());
+        a.setPassword(new String(txtPassword.getPassword()).trim());
+        String res = controller.registrar(a);
+        if ("OK".equals(res)) { 
+            JOptionPane.showMessageDialog(this, "Administrador agregado con éxito.");
+            cargarTabla(); limpiarFormulario(); 
+        } else {
+            JOptionPane.showMessageDialog(this, res, "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
-    // toma los datos modificados y actualiza al cliente seleccionado
     private void editar() {
         int fila = tabla.getSelectedRow();
-        if (fila < 0) { JOptionPane.showMessageDialog(this, "Seleccioná un cliente de la tabla."); return; }
-        if (!validarCampos()) return;
-        Cliente c = new Cliente();
-        c.setId((int) modeloTabla.getValueAt(fila, 0));
-        c.setDni(Integer.parseInt(txtDni.getText().trim()));
-        c.setNombreApellido(txtNombre.getText().trim());
-        c.setEmail(txtEmail.getText().trim());
-        c.setTelefono(txtTelefono.getText().trim());
-        if (controller.actualizar(c)) { cargarTabla(); limpiarFormulario(); }
+        if (fila < 0) { JOptionPane.showMessageDialog(this, "Seleccioná un administrador de la tabla."); return; }
+        if (!validarCampos(false)) return;
+        Administrador a = new Administrador();
+        a.setId((int) modeloTabla.getValueAt(fila, 0));
+        a.setNombreApellido(txtNombre.getText().trim());
+        a.setEmail(txtEmail.getText().trim());
+        
+        String nuevaClave = new String(txtPassword.getPassword()).trim();
+        if (nuevaClave.isEmpty()) {
+            // Si la clave está vacía, buscamos la actual para no pisarla
+            List<Administrador> admins = controller.listar();
+            for (Administrador admin : admins) {
+                if (admin.getId() == a.getId()) {
+                    a.setPassword(admin.getPassword());
+                    break;
+                }
+            }
+        } else {
+            a.setPassword(nuevaClave);
+        }
+        
+        if (controller.actualizar(a)) { cargarTabla(); limpiarFormulario(); }
     }
 
-    // le pide al controlador borrar el cliente seleccionado
     private void eliminar() {
         int fila = tabla.getSelectedRow();
-        if (fila < 0) { JOptionPane.showMessageDialog(this, "Seleccioná un cliente de la tabla."); return; }
+        if (fila < 0) { JOptionPane.showMessageDialog(this, "Seleccioná un administrador de la tabla."); return; }
         int id = (int) modeloTabla.getValueAt(fila, 0);
         if (controller.eliminar(id)) { cargarTabla(); limpiarFormulario(); }
     }
 
-    // vacia todos los cuadritos de texto
     private void limpiarFormulario() {
-        txtDni.setText(""); txtNombre.setText("");
-        txtEmail.setText(""); txtTelefono.setText("");
+        txtNombre.setText(""); txtEmail.setText(""); txtPassword.setText("");
         tabla.clearSelection();
     }
 
-    // revisa que no dejes campos vacios y que el dni sea numero
-    private boolean validarCampos() {
-        if (txtDni.getText().trim().isEmpty() || txtNombre.getText().trim().isEmpty()
-            || txtEmail.getText().trim().isEmpty() || txtTelefono.getText().trim().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Todos los campos son obligatorios.");
+    private boolean validarCampos(boolean validacionCompleta) {
+        if (txtNombre.getText().trim().isEmpty() || txtEmail.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "El nombre y el email son obligatorios.");
             return false;
         }
-        try { Integer.parseInt(txtDni.getText().trim()); }
-        catch (NumberFormatException e) { JOptionPane.showMessageDialog(this, "El DNI debe ser numérico."); return false; }
+        if (validacionCompleta && new String(txtPassword.getPassword()).trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "La contraseña es obligatoria para nuevos usuarios.");
+            return false;
+        }
         return true;
     }
 }

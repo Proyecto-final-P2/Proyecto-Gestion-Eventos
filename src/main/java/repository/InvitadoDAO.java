@@ -36,6 +36,24 @@ public class InvitadoDAO {
         return lista;
     }
 
+    // lista invitados de un cliente específico
+    public List<Invitado> listarPorCliente(int clienteId) throws SQLException {
+        List<Invitado> lista = new ArrayList<>();
+        String sql = 
+            "SELECT i.* FROM Invitado i " +
+            "JOIN Asiste a ON i.IN_ID = a.Invitado_IN_ID " +
+            "JOIN Evento e ON a.Evento_E_ID = e.E_ID " +
+            "WHERE e.Cliente_C_ID = ?";
+        try (Connection con = Util.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, clienteId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) lista.add(mapear(rs));
+            }
+        }
+        return lista;
+    }
+
     // actualiza invitado en BD
     public void actualizar(Invitado inv) throws SQLException {
         String sql = "UPDATE Invitado SET IN_Asistencia=?, IN_PreferenciaMenu=? WHERE IN_ID=?";

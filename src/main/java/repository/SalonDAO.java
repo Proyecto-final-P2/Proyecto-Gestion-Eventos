@@ -73,6 +73,20 @@ public class SalonDAO {
         }
     }
 
+    // busca salones que contengan ese texto en su nombre
+    public List<Salon> buscarPorNombre(String nombre) throws SQLException {
+        List<Salon> lista = new ArrayList<>();
+        String sql = "SELECT * FROM Salon WHERE SA_Nombre LIKE ?";
+        try (Connection con = Util.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, "%" + nombre + "%");
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) lista.add(mapear(rs));
+            }
+        }
+        return lista;
+    }
+
     // convierte fila de la BD en objeto Salon
     private Salon mapear(ResultSet rs) throws SQLException {
         return new Salon(

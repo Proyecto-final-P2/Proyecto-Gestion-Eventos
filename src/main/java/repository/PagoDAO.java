@@ -34,6 +34,24 @@ public class PagoDAO {
         return lista;
     }
 
+    // lista pagos de un cliente específico
+    public List<Pago> listarPorCliente(int clienteId) throws SQLException {
+        List<Pago> lista = new ArrayList<>();
+        String sql =
+            "SELECT p.* FROM Pago p " +
+            "JOIN Reserva r ON p.Reserva_R_ID = r.R_ID " +
+            "JOIN Evento e ON e.E_ID = r.R_ID " +
+            "WHERE e.Cliente_C_ID = ?";
+        try (Connection con = Util.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, clienteId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) lista.add(mapear(rs));
+            }
+        }
+        return lista;
+    }
+
     // convierte una fila de la BD en un objeto Pago
     private Pago mapear(ResultSet rs) throws SQLException {
         return new Pago(

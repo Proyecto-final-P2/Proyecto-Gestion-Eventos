@@ -61,6 +61,32 @@ public class ClienteDAO {
         return lista;
     }
 
+    // busca un cliente por su email exacto
+    public Cliente buscarPorEmail(String email) throws SQLException {
+        String sql = "SELECT * FROM Cliente WHERE C_Email = ?";
+        try (Connection con = Util.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, email);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return mapear(rs);
+            }
+        }
+        return null;
+    }
+
+    // busca un cliente por su dni exacto
+    public Cliente buscarPorDni(int dni) throws SQLException {
+        String sql = "SELECT * FROM Cliente WHERE C_DNI = ?";
+        try (Connection con = Util.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, dni);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return mapear(rs);
+            }
+        }
+        return null;
+    }
+
     // actualiza los datos de un cliente existente en la BD
     public void actualizar(Cliente c) throws SQLException {
         String sql = "UPDATE Cliente SET C_DNI=?, C_NombreApellido=?, C_Email=?, C_Telefono=? WHERE C_ID=?";
