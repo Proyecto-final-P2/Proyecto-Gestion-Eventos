@@ -19,10 +19,6 @@ public class ClientesPanel extends JPanel {
     private DefaultTableModel modeloTabla;
     private JTextField txtBuscar;
 
-    // Campos del formulario
-    private JTextField txtDni, txtNombre, txtEmail, txtTelefono;
-    private JButton    btnAgregar, btnEditar, btnEliminar, btnLimpiar;
-
     public ClientesPanel() {
         setLayout(new BorderLayout(10, 10));
         setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
@@ -43,9 +39,11 @@ public class ClientesPanel extends JPanel {
         };
         tabla = new JTable(modeloTabla);
         tabla.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        tabla.getSelectionModel().addListSelectionListener(e -> {
-            if (!e.getValueIsAdjusting()) cargarFormularioDesdeTabla();
-        });
+
+        // ocultar columna ID visualmente
+        tabla.getColumnModel().getColumn(0).setMinWidth(0);
+        tabla.getColumnModel().getColumn(0).setMaxWidth(0);
+        tabla.getColumnModel().getColumn(0).setWidth(0);
 
         JScrollPane scroll = new JScrollPane(tabla);
 
@@ -68,55 +66,24 @@ public class ClientesPanel extends JPanel {
         centro.add(scroll, BorderLayout.CENTER);
         add(centro, BorderLayout.CENTER);
 
-        // --- FORMULARIO (este) ---
-        JPanel formulario = new JPanel(new GridBagLayout());
-        formulario.setBorder(BorderFactory.createTitledBorder("Datos del cliente"));
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.weightx = 1.0; // Esto permite que ocupen todo el espacio vacío a la derecha
-        gbc.insets = new Insets(8, 5, 8, 5);
-        gbc.gridx = 0;
+        // --- BOTONES (sur) ---
+        JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
-        txtDni      = new JTextField();
-        txtNombre   = new JTextField();
-        txtEmail    = new JTextField();
-        txtTelefono = new JTextField();
-
-        String[] labels = {"DNI:", "Nombre y Apellido:", "Email:", "Teléfono:"};
-        JTextField[] fields = {txtDni, txtNombre, txtEmail, txtTelefono};
-        for (int i = 0; i < labels.length; i++) {
-            fields[i].setPreferredSize(new Dimension(250, 40)); // tamaño de los campos
-            gbc.gridy = i * 2;
-            formulario.add(new JLabel(labels[i]), gbc);
-            gbc.gridy = i * 2 + 1;
-            formulario.add(fields[i], gbc);
-        }
-
-        // Botones
-        btnAgregar  = new JButton("Agregar");
-        btnEditar   = new JButton("Editar");
-        btnEliminar = new JButton("Eliminar");
-        btnLimpiar  = new JButton("Limpiar");
+        JButton btnAgregar   = new JButton("Agregar");
+        JButton btnModificar = new JButton("Modificar");
+        JButton btnEliminar  = new JButton("Eliminar");
 
         btnAgregar.setBackground(new Color(70, 160, 70));
         btnEliminar.setBackground(new Color(200, 60, 60));
 
-        gbc.gridy = 8; formulario.add(btnAgregar, gbc);
-        gbc.gridy = 9; formulario.add(btnEditar, gbc);
-        gbc.gridy = 10; formulario.add(btnEliminar, gbc);
-        gbc.gridy = 11; formulario.add(btnLimpiar, gbc);
+        panelBotones.add(btnAgregar);
+        panelBotones.add(btnModificar);
+        panelBotones.add(btnEliminar);
+        add(panelBotones, BorderLayout.SOUTH);
 
-        btnAgregar.addActionListener(e  -> agregar());
-        btnEditar.addActionListener(e   -> editar());
-        btnEliminar.addActionListener(e -> eliminar());
-        btnLimpiar.addActionListener(e  -> limpiarFormulario());
-
-        JScrollPane scrollForm = new JScrollPane(formulario);
-        scrollForm.setBorder(null);
-        scrollForm.setPreferredSize(new Dimension(280, 0));
-        scrollForm.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        scrollForm.getVerticalScrollBar().setUnitIncrement(16);
-        add(scrollForm, BorderLayout.EAST);
+        btnAgregar.addActionListener(e   -> abrirFormularioAlta());
+        btnModificar.addActionListener(e -> abrirFormularioEdicion());
+        btnEliminar.addActionListener(e  -> eliminarSeleccionado());
     }
 
     // carga todos los clientes de la bd a la tabla visual
@@ -143,65 +110,44 @@ public class ClientesPanel extends JPanel {
         }
     }
 
-    // cuando haces clic en una fila, copia los datos al formulario
-    private void cargarFormularioDesdeTabla() {
-        int fila = tabla.getSelectedRow();
-        if (fila < 0) return;
-        txtDni.setText(modeloTabla.getValueAt(fila, 1).toString());
-        txtNombre.setText(modeloTabla.getValueAt(fila, 2).toString());
-        txtEmail.setText(modeloTabla.getValueAt(fila, 3).toString());
-        txtTelefono.setText(modeloTabla.getValueAt(fila, 4).toString());
+    // abre el formulario vacío para agregar un cliente nuevo
+    private void abrirFormularioAlta() {
+        Window ventana = SwingUtilities.getWindowAncestor(this);
+        JFrame frame = ventana instanceof JFrame ? (JFrame) ventana : null;
+        FormularioCliente form = new FormularioCliente(frame, controller);
+        form.setVisible(true);
+        cargarTabla();
     }
 
-    // toma los datos del formulario y pide al controlador guardarlos
-    private void agregar() {
-        if (!validarCampos()) return;
-        Cliente c = new Cliente();
-        c.setDni(Integer.parseInt(txtDni.getText().trim()));
-        c.setNombreApellido(txtNombre.getText().trim());
-        c.setEmail(txtEmail.getText().trim());
-        c.setTelefono(txtTelefono.getText().trim());
-        if (controller.agregar(c)) { cargarTabla(); limpiarFormulario(); }
-    }
-
-    // toma los datos modificados y actualiza al cliente seleccionado
-    private void editar() {
+    // abre el formulario pre-cargado con la fila seleccionada para editar
+    private void abrirFormularioEdicion() {
         int fila = tabla.getSelectedRow();
-        if (fila < 0) { JOptionPane.showMessageDialog(this, "Seleccioná un cliente de la tabla."); return; }
-        if (!validarCampos()) return;
+        if (fila < 0) {
+            JOptionPane.showMessageDialog(this, "Seleccioná un cliente de la tabla.", "Aviso", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
         Cliente c = new Cliente();
         c.setId((int) modeloTabla.getValueAt(fila, 0));
-        c.setDni(Integer.parseInt(txtDni.getText().trim()));
-        c.setNombreApellido(txtNombre.getText().trim());
-        c.setEmail(txtEmail.getText().trim());
-        c.setTelefono(txtTelefono.getText().trim());
-        if (controller.actualizar(c)) { cargarTabla(); limpiarFormulario(); }
+        c.setDni(Integer.parseInt(modeloTabla.getValueAt(fila, 1).toString()));
+        c.setNombreApellido(modeloTabla.getValueAt(fila, 2).toString());
+        c.setEmail(modeloTabla.getValueAt(fila, 3).toString());
+        c.setTelefono(modeloTabla.getValueAt(fila, 4).toString());
+
+        Window ventana = SwingUtilities.getWindowAncestor(this);
+        JFrame frame = ventana instanceof JFrame ? (JFrame) ventana : null;
+        FormularioCliente form = new FormularioCliente(frame, controller, c);
+        form.setVisible(true);
+        cargarTabla();
     }
 
-    // le pide al controlador borrar el cliente seleccionado
-    private void eliminar() {
+    // elimina el cliente seleccionado previa confirmación
+    private void eliminarSeleccionado() {
         int fila = tabla.getSelectedRow();
-        if (fila < 0) { JOptionPane.showMessageDialog(this, "Seleccioná un cliente de la tabla."); return; }
-        int id = (int) modeloTabla.getValueAt(fila, 0);
-        if (controller.eliminar(id)) { cargarTabla(); limpiarFormulario(); }
-    }
-
-    // vacia todos los cuadritos de texto
-    private void limpiarFormulario() {
-        txtDni.setText(""); txtNombre.setText("");
-        txtEmail.setText(""); txtTelefono.setText("");
-        tabla.clearSelection();
-    }
-
-    // revisa que no dejes campos vacios y que el dni sea numero
-    private boolean validarCampos() {
-        if (txtDni.getText().trim().isEmpty() || txtNombre.getText().trim().isEmpty()
-            || txtEmail.getText().trim().isEmpty() || txtTelefono.getText().trim().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Todos los campos son obligatorios.");
-            return false;
+        if (fila < 0) {
+            JOptionPane.showMessageDialog(this, "Seleccioná un cliente de la tabla.", "Aviso", JOptionPane.WARNING_MESSAGE);
+            return;
         }
-        try { Integer.parseInt(txtDni.getText().trim()); }
-        catch (NumberFormatException e) { JOptionPane.showMessageDialog(this, "El DNI debe ser numérico."); return false; }
-        return true;
+        int id = (int) modeloTabla.getValueAt(fila, 0);
+        if (controller.eliminar(id)) cargarTabla();
     }
 }

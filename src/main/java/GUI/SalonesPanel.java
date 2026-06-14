@@ -18,10 +18,6 @@ public class SalonesPanel extends JPanel {
     private DefaultTableModel modeloTabla;
     private JTextField txtBuscar;
 
-    // Campos del formulario
-    private JTextField txtNombre, txtDireccion, txtCapacidad, txtCantSillas, txtCantMesas, txtCosto;
-    private JButton    btnAgregar, btnEditar, btnEliminar, btnLimpiar;
-
     public SalonesPanel() {
         setLayout(new BorderLayout(10, 10));
         setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
@@ -42,9 +38,11 @@ public class SalonesPanel extends JPanel {
         };
         tabla = new JTable(modeloTabla);
         tabla.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        tabla.getSelectionModel().addListSelectionListener(e -> {
-            if (!e.getValueIsAdjusting()) cargarFormularioDesdeTabla();
-        });
+
+        // ocultar columna ID visualmente
+        tabla.getColumnModel().getColumn(0).setMinWidth(0);
+        tabla.getColumnModel().getColumn(0).setMaxWidth(0);
+        tabla.getColumnModel().getColumn(0).setWidth(0);
 
         JScrollPane scroll = new JScrollPane(tabla);
 
@@ -67,57 +65,24 @@ public class SalonesPanel extends JPanel {
         centro.add(scroll, BorderLayout.CENTER);
         add(centro, BorderLayout.CENTER);
 
-        // --- FORMULARIO (este) ---
-        JPanel formulario = new JPanel(new GridBagLayout());
-        formulario.setBorder(BorderFactory.createTitledBorder("Datos del salón"));
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.weightx = 1.0;
-        gbc.insets = new Insets(8, 5, 8, 5);
-        gbc.gridx = 0;
+        // --- BOTONES (sur) ---
+        JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
-        txtNombre     = new JTextField();
-        txtDireccion  = new JTextField();
-        txtCapacidad  = new JTextField();
-        txtCantSillas = new JTextField();
-        txtCantMesas  = new JTextField();
-        txtCosto      = new JTextField();
-
-        String[] labels = {"Nombre:", "Dirección:", "Capacidad:", "Sillas:", "Mesas:", "Costo:"};
-        JTextField[] fields = {txtNombre, txtDireccion, txtCapacidad, txtCantSillas, txtCantMesas, txtCosto};
-        for (int i = 0; i < labels.length; i++) {
-            fields[i].setPreferredSize(new Dimension(250, 40));
-            gbc.gridy = i * 2;
-            formulario.add(new JLabel(labels[i]), gbc);
-            gbc.gridy = i * 2 + 1;
-            formulario.add(fields[i], gbc);
-        }
-
-        // Botones
-        btnAgregar  = new JButton("Agregar");
-        btnEditar   = new JButton("Editar");
-        btnEliminar = new JButton("Eliminar");
-        btnLimpiar  = new JButton("Limpiar");
+        JButton btnAgregar   = new JButton("Agregar");
+        JButton btnModificar = new JButton("Modificar");
+        JButton btnEliminar  = new JButton("Eliminar");
 
         btnAgregar.setBackground(new Color(70, 160, 70));
         btnEliminar.setBackground(new Color(200, 60, 60));
 
-        gbc.gridy = 12; formulario.add(btnAgregar, gbc);
-        gbc.gridy = 13; formulario.add(btnEditar, gbc);
-        gbc.gridy = 14; formulario.add(btnEliminar, gbc);
-        gbc.gridy = 15; formulario.add(btnLimpiar, gbc);
+        panelBotones.add(btnAgregar);
+        panelBotones.add(btnModificar);
+        panelBotones.add(btnEliminar);
+        add(panelBotones, BorderLayout.SOUTH);
 
-        btnAgregar.addActionListener(e  -> agregar());
-        btnEditar.addActionListener(e   -> editar());
-        btnEliminar.addActionListener(e -> eliminar());
-        btnLimpiar.addActionListener(e  -> limpiarFormulario());
-
-        JScrollPane scrollForm = new JScrollPane(formulario);
-        scrollForm.setBorder(null);
-        scrollForm.setPreferredSize(new Dimension(280, 0));
-        scrollForm.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        scrollForm.getVerticalScrollBar().setUnitIncrement(16);
-        add(scrollForm, BorderLayout.EAST);
+        btnAgregar.addActionListener(e   -> abrirFormularioAlta());
+        btnModificar.addActionListener(e -> abrirFormularioEdicion());
+        btnEliminar.addActionListener(e  -> eliminarSeleccionado());
     }
 
     private void cargarTabla() {
@@ -142,92 +107,43 @@ public class SalonesPanel extends JPanel {
         }
     }
 
-    private void cargarFormularioDesdeTabla() {
-        int fila = tabla.getSelectedRow();
-        if (fila < 0) return;
-        txtNombre.setText(modeloTabla.getValueAt(fila, 1).toString());
-        txtDireccion.setText(modeloTabla.getValueAt(fila, 2).toString());
-        txtCapacidad.setText(modeloTabla.getValueAt(fila, 3).toString());
-        txtCantSillas.setText(modeloTabla.getValueAt(fila, 4).toString());
-        txtCantMesas.setText(modeloTabla.getValueAt(fila, 5).toString());
-        txtCosto.setText(modeloTabla.getValueAt(fila, 6).toString());
+    private void abrirFormularioAlta() {
+        Window ventana = SwingUtilities.getWindowAncestor(this);
+        JFrame frame = ventana instanceof JFrame ? (JFrame) ventana : null;
+        FormularioSalon form = new FormularioSalon(frame, controller);
+        form.setVisible(true);
+        cargarTabla();
     }
 
-    private void agregar() {
-        if (!validarCampos()) return;
-        Salon s = new Salon();
-        s.setNombre(txtNombre.getText().trim());
-        s.setDireccion(txtDireccion.getText().trim());
-        s.setCapacidad(Integer.parseInt(txtCapacidad.getText().trim()));
-        s.setCantSillas(Integer.parseInt(txtCantSillas.getText().trim()));
-        s.setCantMesas(Integer.parseInt(txtCantMesas.getText().trim()));
-        s.setCosto(Double.parseDouble(txtCosto.getText().trim()));
-        if (controller.agregar(s)) { cargarTabla(); limpiarFormulario(); }
-    }
-
-    private void editar() {
+    private void abrirFormularioEdicion() {
         int fila = tabla.getSelectedRow();
-        if (fila < 0) { JOptionPane.showMessageDialog(this, "Seleccioná un salón de la tabla."); return; }
-        if (!validarCampos()) return;
+        if (fila < 0) {
+            JOptionPane.showMessageDialog(this, "Seleccioná un salón de la tabla.", "Aviso", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
         Salon s = new Salon();
         s.setId((int) modeloTabla.getValueAt(fila, 0));
-        s.setNombre(txtNombre.getText().trim());
-        s.setDireccion(txtDireccion.getText().trim());
-        s.setCapacidad(Integer.parseInt(txtCapacidad.getText().trim()));
-        s.setCantSillas(Integer.parseInt(txtCantSillas.getText().trim()));
-        s.setCantMesas(Integer.parseInt(txtCantMesas.getText().trim()));
-        s.setCosto(Double.parseDouble(txtCosto.getText().trim()));
-        if (controller.actualizar(s)) { cargarTabla(); limpiarFormulario(); }
+        s.setNombre(modeloTabla.getValueAt(fila, 1).toString());
+        s.setDireccion(modeloTabla.getValueAt(fila, 2).toString());
+        s.setCapacidad(Integer.parseInt(modeloTabla.getValueAt(fila, 3).toString()));
+        s.setCantSillas(Integer.parseInt(modeloTabla.getValueAt(fila, 4).toString()));
+        s.setCantMesas(Integer.parseInt(modeloTabla.getValueAt(fila, 5).toString()));
+        s.setCosto(Double.parseDouble(modeloTabla.getValueAt(fila, 6).toString()));
+
+        Window ventana = SwingUtilities.getWindowAncestor(this);
+        JFrame frame = ventana instanceof JFrame ? (JFrame) ventana : null;
+        FormularioSalon form = new FormularioSalon(frame, controller, s);
+        form.setVisible(true);
+        cargarTabla();
     }
 
-    private void eliminar() {
+    private void eliminarSeleccionado() {
         int fila = tabla.getSelectedRow();
-        if (fila < 0) { JOptionPane.showMessageDialog(this, "Seleccioná un salón de la tabla."); return; }
+        if (fila < 0) {
+            JOptionPane.showMessageDialog(this, "Seleccioná un salón de la tabla.", "Aviso", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
         int id = (int) modeloTabla.getValueAt(fila, 0);
-        if (controller.eliminar(id)) { cargarTabla(); limpiarFormulario(); }
-    }
-
-    private void limpiarFormulario() {
-        txtNombre.setText("");
-        txtDireccion.setText("");
-        txtCapacidad.setText("");
-        txtCantSillas.setText("");
-        txtCantMesas.setText("");
-        txtCosto.setText("");
-        tabla.clearSelection();
-    }
-
-    private boolean validarCampos() {
-        if (txtNombre.getText().trim().isEmpty() || txtDireccion.getText().trim().isEmpty()
-            || txtCapacidad.getText().trim().isEmpty() || txtCantSillas.getText().trim().isEmpty()
-            || txtCantMesas.getText().trim().isEmpty() || txtCosto.getText().trim().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Todos los campos son obligatorios.");
-            return false;
-        }
-        try {
-            Integer.parseInt(txtCapacidad.getText().trim());
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "La capacidad debe ser un número entero.");
-            return false;
-        }
-        try {
-            Integer.parseInt(txtCantSillas.getText().trim());
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "La cantidad de sillas debe ser un número entero.");
-            return false;
-        }
-        try {
-            Integer.parseInt(txtCantMesas.getText().trim());
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "La cantidad de mesas debe ser un número entero.");
-            return false;
-        }
-        try {
-            Double.parseDouble(txtCosto.getText().trim());
-        } catch (NumberFormatException e) {
-            JOptionPane.showMessageDialog(this, "El costo debe ser un número decimal (ej. 1500.50).");
-            return false;
-        }
-        return true;
+        if (controller.eliminar(id)) cargarTabla();
     }
 }
