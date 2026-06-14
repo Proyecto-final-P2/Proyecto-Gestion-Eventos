@@ -44,7 +44,8 @@ public class FormularioInvitado extends JDialog {
     }
 
     private void initComponents() {
-        setSize(420, 400);
+        setMinimumSize(new Dimension(420, 400));
+        pack();
         setLocationRelativeTo(getParent());
         setResizable(false);
 
