@@ -57,7 +57,7 @@ public class ServiciosPanel extends JPanel {
         // Corrección: Estados lógicos de un servicio
         cmbEstado = new JComboBox<>(new String[]{"Disponible", "No disponible"});
 
-        panelForm.add(new JLabel("ID (Autogenerado):")); panelForm.add(txtId);
+        panelForm.add(new JLabel("ID:")); panelForm.add(txtId);
         panelForm.add(new JLabel("Tipo:")); panelForm.add(cmbTipo);
         panelForm.add(new JLabel("Proveedor:")); panelForm.add(txtProveedor);
         panelForm.add(new JLabel("Costo ($):")); panelForm.add(txtCosto);
