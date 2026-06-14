@@ -22,6 +22,7 @@ public class InvitadosPanel extends JPanel {
     private DefaultTableModel modelo;
     private JComboBox<String> comboEventos;
     private List<Evento> eventos; // para recuperar el ID del evento seleccionado
+    private JTextField txtBuscar;
 
     public InvitadosPanel() {
         setLayout(new BorderLayout(10, 10));
@@ -35,19 +36,38 @@ public class InvitadosPanel extends JPanel {
         titulo.setFont(new Font("Arial", Font.BOLD, 18));
         add(titulo, BorderLayout.NORTH);
 
-        // --- ZONA SUPERIOR: filtro por evento ---
-        JPanel panelFiltro = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        // --- ZONA SUPERIOR: filtro por evento y buscador ---
+        JPanel panelFiltro = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
         panelFiltro.add(new JLabel("Evento:"));
         comboEventos = new JComboBox<>();
         cargarComboEventos();
         panelFiltro.add(comboEventos);
 
+        panelFiltro.add(new JLabel("  |  Buscar por DNI:"));
+        txtBuscar = new JTextField(15);
+        JButton btnBuscar = new JButton("Buscar");
+        JButton btnMostrarTodos = new JButton("Mostrar todos");
+        panelFiltro.add(txtBuscar);
+        panelFiltro.add(btnBuscar);
+        panelFiltro.add(btnMostrarTodos);
+
         comboEventos.addActionListener(e -> {
+            int idx = comboEventos.getSelectedIndex();
+            if (idx >= 0 && eventos != null && !eventos.isEmpty()) {
+                if (txtBuscar != null) txtBuscar.setText("");
+                cargarTabla(eventos.get(idx).getId());
+            }
+        });
+
+        btnBuscar.addActionListener(e -> buscar());
+        btnMostrarTodos.addActionListener(e -> {
+            txtBuscar.setText("");
             int idx = comboEventos.getSelectedIndex();
             if (idx >= 0 && eventos != null && !eventos.isEmpty()) {
                 cargarTabla(eventos.get(idx).getId());
             }
         });
+        txtBuscar.addActionListener(e -> buscar());
 
         // --- ZONA CENTRAL: tabla ---
         String[] columnas = {"ID", "DNI", "Nombre y Apellido", "Email", "Asistencia", "Menú"};
@@ -179,6 +199,32 @@ public class InvitadosPanel extends JPanel {
         if (confirmar == JOptionPane.YES_OPTION) {
             controller.eliminar(id);
             cargarTabla(getEventoIdSeleccionado());
+        }
+    }
+
+    // filtra la tabla usando el texto del buscador (DNI)
+    private void buscar() {
+        String texto = txtBuscar.getText().trim();
+        int eventoId = getEventoIdSeleccionado();
+        if (eventoId < 0) {
+            JOptionPane.showMessageDialog(this, "Seleccioná un evento primero.");
+            return;
+        }
+        if (texto.isEmpty()) {
+            cargarTabla(eventoId);
+            return;
+        }
+        modelo.setRowCount(0);
+        List<Invitado> resultados = controller.buscarPorDni(texto, eventoId);
+        for (Invitado inv : resultados) {
+            modelo.addRow(new Object[]{
+                inv.getId(),
+                inv.getDni(),
+                inv.getNombreApellido(),
+                inv.getEmail(),
+                inv.getAsistencia(),
+                inv.getPreferenciaMenu()
+            });
         }
     }
 }

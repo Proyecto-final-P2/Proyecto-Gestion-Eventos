@@ -52,7 +52,7 @@ public class ClientesPanel extends JPanel {
         txtBuscar = new JTextField(20);
         JButton btnBuscar = new JButton("Buscar");
         JButton btnMostrarTodos = new JButton("Mostrar todos");
-        panelBuscar.add(new JLabel("Buscar por nombre:"));
+        panelBuscar.add(new JLabel("Buscar por DNI:"));
         panelBuscar.add(txtBuscar);
         panelBuscar.add(btnBuscar);
         panelBuscar.add(btnMostrarTodos);
