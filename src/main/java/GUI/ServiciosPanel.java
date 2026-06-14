@@ -12,19 +12,16 @@ public class ServiciosPanel extends JPanel {
 
     private ServicioController controller;
 
-    // Componentes de la Tabla
     private JTable tablaServicios;
     private DefaultTableModel modeloTabla;
 
-    // Componentes del Formulario
     private JTextField txtId;
-    private JTextField txtTipo;
+    private JComboBox<String> cmbTipo; // Corrección: Ahora es desplegable
     private JTextField txtProveedor;
     private JTextField txtCosto;
     private JTextField txtCantidad;
-    private JComboBox<String> cmbEstado; // Requisito del Sprint
+    private JComboBox<String> cmbEstado; // Corrección: Estados lógicos para un catálogo
 
-    // Botones
     private JButton btnGuardar;
     private JButton btnActualizar;
     private JButton btnEliminar;
@@ -41,31 +38,32 @@ public class ServiciosPanel extends JPanel {
     }
 
     private void inicializarFormulario() {
-        JPanel panelIzquierdo = new JPanel(new BorderLayout());
-        panelIzquierdo.setPreferredSize(new Dimension(300, 0));
+        // Corrección: Panel a la derecha (EAST)
+        JPanel panelDerecho = new JPanel(new BorderLayout());
+        panelDerecho.setPreferredSize(new Dimension(300, 0));
 
         JPanel panelForm = new JPanel(new GridLayout(7, 2, 5, 15));
         panelForm.setBorder(BorderFactory.createTitledBorder("Gestión de Servicio"));
 
-        // Inicializar campos
         txtId = new JTextField();
-        txtTipo = new JTextField();
+        txtId.setEnabled(false); // Corrección: ID bloqueado porque es autoincremental
+        
+        // Corrección: JComboBox para Tipos
+        cmbTipo = new JComboBox<>(new String[]{"Catering", "DJ", "Decoración", "Sonido", "Iluminación", "Fotografía", "Seguridad", "Otro"});
         txtProveedor = new JTextField();
         txtCosto = new JTextField();
         txtCantidad = new JTextField();
         
-        // Requisito: JComboBox con los estados específicos
-        cmbEstado = new JComboBox<>(new String[]{"confirmado", "pendiente de confirmacion", "cancelado"});
+        // Corrección: Estados lógicos de un servicio
+        cmbEstado = new JComboBox<>(new String[]{"Disponible", "No disponible"});
 
-        // Agregar al panel
-        panelForm.add(new JLabel("ID (Solo para guardar):")); panelForm.add(txtId);
-        panelForm.add(new JLabel("Tipo:")); panelForm.add(txtTipo);
+        panelForm.add(new JLabel("ID (Autogenerado):")); panelForm.add(txtId);
+        panelForm.add(new JLabel("Tipo:")); panelForm.add(cmbTipo);
         panelForm.add(new JLabel("Proveedor:")); panelForm.add(txtProveedor);
         panelForm.add(new JLabel("Costo ($):")); panelForm.add(txtCosto);
         panelForm.add(new JLabel("Cantidad:")); panelForm.add(txtCantidad);
         panelForm.add(new JLabel("Estado:")); panelForm.add(cmbEstado);
 
-        // Panel de botones
         JPanel panelBotones = new JPanel(new GridLayout(2, 2, 5, 5));
         btnGuardar = new JButton("Guardar");
         btnActualizar = new JButton("Actualizar");
@@ -77,13 +75,13 @@ public class ServiciosPanel extends JPanel {
         panelBotones.add(btnEliminar);
         panelBotones.add(btnLimpiar);
 
-        panelForm.add(new JLabel()); // Espacio vacío
-        panelIzquierdo.add(panelForm, BorderLayout.NORTH);
-        panelIzquierdo.add(panelBotones, BorderLayout.SOUTH);
+        panelForm.add(new JLabel()); 
+        panelDerecho.add(panelForm, BorderLayout.NORTH);
+        panelDerecho.add(panelBotones, BorderLayout.SOUTH);
 
-        add(panelIzquierdo, BorderLayout.WEST);
+        // Corrección: Agregado a la derecha en lugar de la izquierda
+        add(panelDerecho, BorderLayout.EAST);
 
-        // --- EVENTOS DE LOS BOTONES ---
         btnGuardar.addActionListener(e -> guardarServicio());
         btnActualizar.addActionListener(e -> actualizarServicio());
         btnEliminar.addActionListener(e -> eliminarServicio());
@@ -94,23 +92,21 @@ public class ServiciosPanel extends JPanel {
         modeloTabla = new DefaultTableModel(new String[]{"ID", "Tipo", "Proveedor", "Costo", "Cantidad", "Estado"}, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
-                return false; // Evita que editen la tabla haciendo doble clic
+                return false; 
             }
         };
         tablaServicios = new JTable(modeloTabla);
         
-        // Al hacer clic en la tabla, se pasan los datos al formulario para poder editar
         tablaServicios.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 int fila = tablaServicios.getSelectedRow();
                 if (fila != -1) {
                     txtId.setText(modeloTabla.getValueAt(fila, 0).toString());
-                    txtTipo.setText(modeloTabla.getValueAt(fila, 1).toString());
+                    cmbTipo.setSelectedItem(modeloTabla.getValueAt(fila, 1).toString());
                     txtProveedor.setText(modeloTabla.getValueAt(fila, 2).toString());
                     txtCosto.setText(modeloTabla.getValueAt(fila, 3).toString());
                     txtCantidad.setText(modeloTabla.getValueAt(fila, 4).toString());
                     cmbEstado.setSelectedItem(modeloTabla.getValueAt(fila, 5).toString());
-                    txtId.setEnabled(false); // No se debe cambiar el ID al actualizar
                 }
             }
         });
@@ -120,7 +116,7 @@ public class ServiciosPanel extends JPanel {
     }
 
     private void cargarTabla() {
-        modeloTabla.setRowCount(0); // Limpiar tabla
+        modeloTabla.setRowCount(0); 
         List<Servicio> lista = controller.listarServicios();
         for (Servicio s : lista) {
             modeloTabla.addRow(new Object[]{s.getId(), s.getTipo(), s.getProveedor(), s.getCosto(), s.getCantidad(), s.getEstado()});
@@ -128,11 +124,12 @@ public class ServiciosPanel extends JPanel {
     }
 
     private void guardarServicio() {
-        if (!validarCamposVacios()) return;
+        if (txtProveedor.getText().trim().isEmpty() || txtCosto.getText().trim().isEmpty() || txtCantidad.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Por favor, complete todos los campos.", "Campos incompletos", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
 
         try {
-            // Requisito: Validaciones numéricas
-            int id = Integer.parseInt(txtId.getText().trim());
             double costo = Double.parseDouble(txtCosto.getText().trim());
             int cantidad = Integer.parseInt(txtCantidad.getText().trim());
 
@@ -141,7 +138,8 @@ public class ServiciosPanel extends JPanel {
                 return;
             }
 
-            Servicio s = new Servicio(id, txtTipo.getText().trim(), txtProveedor.getText().trim(), costo, cantidad, (String) cmbEstado.getSelectedItem());
+            // Mandamos 0 como ID porque la BD lo va a autogenerar
+            Servicio s = new Servicio(0, (String) cmbTipo.getSelectedItem(), txtProveedor.getText().trim(), costo, cantidad, (String) cmbEstado.getSelectedItem());
             
             if (controller.guardarServicio(s)) {
                 JOptionPane.showMessageDialog(this, "Servicio guardado exitosamente.");
@@ -151,12 +149,15 @@ public class ServiciosPanel extends JPanel {
                 JOptionPane.showMessageDialog(this, "Error al guardar en la base de datos.");
             }
         } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "ID, Costo y Cantidad deben ser números válidos.", "Error de Formato", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Costo y Cantidad deben ser números válidos.", "Error de Formato", JOptionPane.WARNING_MESSAGE);
         }
     }
 
     private void actualizarServicio() {
-        if (!validarCamposVacios()) return;
+        if (txtId.getText().trim().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Seleccione un servicio de la tabla para actualizar.", "Aviso", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
 
         try {
             int id = Integer.parseInt(txtId.getText().trim());
@@ -168,7 +169,7 @@ public class ServiciosPanel extends JPanel {
                 return;
             }
 
-            Servicio s = new Servicio(id, txtTipo.getText().trim(), txtProveedor.getText().trim(), costo, cantidad, (String) cmbEstado.getSelectedItem());
+            Servicio s = new Servicio(id, (String) cmbTipo.getSelectedItem(), txtProveedor.getText().trim(), costo, cantidad, (String) cmbEstado.getSelectedItem());
             
             if (controller.actualizarServicio(s)) {
                 JOptionPane.showMessageDialog(this, "Servicio actualizado exitosamente.");
@@ -178,7 +179,7 @@ public class ServiciosPanel extends JPanel {
                 JOptionPane.showMessageDialog(this, "Error al actualizar en la base de datos.");
             }
         } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "ID, Costo y Cantidad deben ser números válidos.", "Error de Formato", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Costo y Cantidad deben ser números válidos.", "Error de Formato", JOptionPane.WARNING_MESSAGE);
         }
     }
 
@@ -205,22 +206,13 @@ public class ServiciosPanel extends JPanel {
         }
     }
 
-    private boolean validarCamposVacios() {
-        if (txtId.getText().trim().isEmpty() || txtTipo.getText().trim().isEmpty() || txtProveedor.getText().trim().isEmpty() || txtCosto.getText().trim().isEmpty() || txtCantidad.getText().trim().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Por favor, complete todos los campos.", "Campos incompletos", JOptionPane.WARNING_MESSAGE);
-            return false;
-        }
-        return true;
-    }
-
     private void limpiarCampos() {
         txtId.setText("");
-        txtTipo.setText("");
+        cmbTipo.setSelectedIndex(0);
         txtProveedor.setText("");
         txtCosto.setText("");
         txtCantidad.setText("");
         cmbEstado.setSelectedIndex(0);
-        txtId.setEnabled(true);
         tablaServicios.clearSelection();
     }
 }

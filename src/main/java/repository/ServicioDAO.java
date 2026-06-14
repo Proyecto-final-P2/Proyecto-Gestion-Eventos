@@ -7,22 +7,19 @@ import java.util.List;
 
 public class ServicioDAO {
 
-    // inserta servicio en la BD
+// inserta servicio en la BD (SIN EL ID)
     public void insertar(Servicio s) throws SQLException {
-        // Corrección: Se agregó SE_ID tanto en los campos como en los valores (?)
-        String sql = "INSERT INTO Servicios (SE_ID, SE_Tipo, SE_Proveedor, SE_Costo, SE_Cantidad, SE_Estado) VALUES (?,?,?,?,?,?)";
+        String sql = "INSERT INTO Servicios (SE_Tipo, SE_Proveedor, SE_Costo, SE_Cantidad, SE_Estado) VALUES (?,?,?,?,?)";
         try (Connection con = Util.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, s.getId()); // Se pasa el ID a la base de datos
-            ps.setString(2, s.getTipo());
-            ps.setString(3, s.getProveedor());
-            ps.setDouble(4, s.getCosto());
-            ps.setInt(5, s.getCantidad());
-            ps.setString(6, s.getEstado());
+            ps.setString(1, s.getTipo());
+            ps.setString(2, s.getProveedor());
+            ps.setDouble(3, s.getCosto());
+            ps.setInt(4, s.getCantidad());
+            ps.setString(5, s.getEstado());
             ps.executeUpdate();
         }
     }
-
     // lista servicios de la BD
     public List<Servicio> listar() throws SQLException {
         List<Servicio> lista = new ArrayList<>();
