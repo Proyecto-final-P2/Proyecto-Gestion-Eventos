@@ -32,7 +32,7 @@ public class MenuPrincipal extends JFrame {
         // Bienvenida
         JLabel lblBienvenida = new JLabel("Hola, " + adminActivo.getNombreApellido().split(" ")[0]);
         lblBienvenida.setForeground(Color.WHITE);
-        lblBienvenida.setFont(new Font("Arial", Font.BOLD, 14));
+        lblBienvenida.setFont(new Font("Segoe UI", Font.BOLD, 14));
         lblBienvenida.setAlignmentX(Component.CENTER_ALIGNMENT);
         sidebar.add(lblBienvenida);
         sidebar.add(Box.createRigidArea(new Dimension(0, 20)));
@@ -76,13 +76,13 @@ public class MenuPrincipal extends JFrame {
         
         gbcCent.gridy = 1; gbcCent.insets = new Insets(10, 0, 10, 0);
         JLabel lblTitulo = new JLabel("¡Bienvenido al Gestor de Eventos!");
-        lblTitulo.setFont(new Font("Arial", Font.BOLD, 24));
+        lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 24));
         lblTitulo.setForeground(new Color(50, 50, 50));
         panelBienvenida.add(lblTitulo, gbcCent);
         
         gbcCent.gridy = 2; gbcCent.insets = new Insets(0, 0, 0, 0);
         JLabel lblSub = new JLabel("Seleccioná una sección en el menú lateral para comenzar.");
-        lblSub.setFont(new Font("Arial", Font.PLAIN, 16));
+        lblSub.setFont(new Font("Segoe UI", Font.PLAIN, 16));
         lblSub.setForeground(Color.GRAY);
         panelBienvenida.add(lblSub, gbcCent);
 

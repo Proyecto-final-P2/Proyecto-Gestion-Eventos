@@ -52,15 +52,9 @@ public class ClienteController {
         catch (Exception ex) { JOptionPane.showMessageDialog(null, "Error: " + ex.getMessage()); return false; }
     }
 
-    // borra un cliente, pero antes pregunta si estás seguro
+    // borra un cliente
     public boolean eliminar(int id) {
-        // cartel de confirmación (si/no)
-        int ok = JOptionPane.showConfirmDialog(null, "¿Eliminar este cliente?", "Confirmar", JOptionPane.YES_NO_OPTION);
-        // no o cerrar, no hace nada
-        if (ok != JOptionPane.YES_OPTION) return false;
-        
-        // si, le dice al dao que lo elimine
-        try { dao.eliminar(id); JOptionPane.showMessageDialog(null, "Cliente eliminado."); return true; }
+        try { dao.eliminar(id); return true; }
         catch (Exception ex) { JOptionPane.showMessageDialog(null, "Error: " + ex.getMessage()); return false; }
     }
 }

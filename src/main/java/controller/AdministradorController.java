@@ -37,10 +37,7 @@ public class AdministradorController {
     }
 
     public boolean eliminar(int id) {
-        int ok = JOptionPane.showConfirmDialog(null, "¿Eliminar este administrador?", "Confirmar", JOptionPane.YES_NO_OPTION);
-        if (ok != JOptionPane.YES_OPTION) return false;
-        
-        try { dao.eliminar(id); JOptionPane.showMessageDialog(null, "Administrador eliminado."); return true; }
+        try { dao.eliminar(id); return true; }
         catch (Exception ex) { JOptionPane.showMessageDialog(null, "Error: " + ex.getMessage()); return false; }
     }
 }

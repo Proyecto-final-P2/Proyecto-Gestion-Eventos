@@ -67,11 +67,13 @@ public class InvitadoController {
     }
 
     // elimina un invitado por su ID (borra también de Asiste en el DAO)
-    public void eliminar(int id) {
+    public boolean eliminar(int id) {
         try {
             dao.eliminar(id);
+            return true;
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(null, "Error al eliminar invitado: " + ex.getMessage());
+            return false;
         }
     }
 }

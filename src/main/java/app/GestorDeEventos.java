@@ -12,6 +12,12 @@ public class GestorDeEventos {
         try {
             // que la app use el estilo visual de windows
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            
+            // Traducir los botones de los pop-ups a español para todo el sistema
+            UIManager.put("OptionPane.yesButtonText", "Sí");
+            UIManager.put("OptionPane.noButtonText", "No");
+            UIManager.put("OptionPane.cancelButtonText", "Cancelar");
+            UIManager.put("OptionPane.okButtonText", "Aceptar");
         } catch (Exception ignored) {
             // si algo falla se ignora y sigue
         }
