@@ -18,7 +18,7 @@ public class FormularioEvento extends JDialog {
     private final EventoController controller;
     private final Evento eventoExistente; // null si es alta
 
-    private JTextField txtTipo;
+    private JComboBox<String> cbTipo;
     private JSpinner spinFecha;
     private JSpinner spinHorario;
     private JTextField txtCantInvitados;
@@ -55,10 +55,13 @@ public class FormularioEvento extends JDialog {
         gbc.weightx = 1.0;
         gbc.gridx = 0;
 
-        txtTipo          = new JTextField();
+        cbTipo = new JComboBox<>(new String[]{
+            "Boda", "Casamiento", "Cumpleaños", "Conferencia", "Fiesta de Navidad", "Reunión de Empresa", "Otros"
+        });
+        cbTipo.setEditable(true);
         
         spinFecha = new JSpinner(new SpinnerDateModel());
-        JSpinner.DateEditor dateEditor = new JSpinner.DateEditor(spinFecha, "yyyy-MM-dd");
+        JSpinner.DateEditor dateEditor = new JSpinner.DateEditor(spinFecha, "dd-MM-yyyy");
         spinFecha.setEditor(dateEditor);
 
         spinHorario = new JSpinner(new SpinnerDateModel());
@@ -71,7 +74,7 @@ public class FormularioEvento extends JDialog {
         cbCliente        = new JComboBox<>();
         cbSalon          = new JComboBox<>();
 
-        agregarCampo(panel, gbc, 0,  "Tipo de Evento (*):", txtTipo);
+        agregarCampo(panel, gbc, 0,  "Tipo de Evento (*):", cbTipo);
         agregarCampo(panel, gbc, 2,  "Fecha (*):", spinFecha);
         agregarCampo(panel, gbc, 4,  "Horario (*):", spinHorario);
         agregarCampo(panel, gbc, 6,  "Cant. Invitados (*):", txtCantInvitados);
@@ -124,7 +127,7 @@ public class FormularioEvento extends JDialog {
     }
 
     private void precargarCampos(Evento e) {
-        txtTipo.setText(e.getTipo());
+        cbTipo.setSelectedItem(e.getTipo());
         
         try {
             java.util.Date d = java.sql.Date.valueOf(e.getFecha());
@@ -154,7 +157,10 @@ public class FormularioEvento extends JDialog {
     }
 
     private void guardar() {
-        String tipo      = txtTipo.getText().trim();
+        String tipo = "";
+        if (cbTipo.getSelectedItem() != null) {
+            tipo = cbTipo.getSelectedItem().toString().trim();
+        }
         String invitados = txtCantInvitados.getText().trim();
         String costo     = txtCostoFinal.getText().trim();
 
