@@ -109,12 +109,9 @@ public class FormularioAdministrador extends JDialog {
 
         if (adminExistente == null) {
             a.setPassword(pwd);
-            String res = controller.registrar(a);
-            if ("OK".equals(res)) {
-                JOptionPane.showMessageDialog(this, "Administrador agregado con éxito.");
+            if (controller.agregar(a)) {
+                JOptionPane.showMessageDialog(this, "Administrador guardado exitosamente.");
                 dispose();
-            } else {
-                JOptionPane.showMessageDialog(this, res, "Error", JOptionPane.ERROR_MESSAGE);
             }
         } else {
             a.setId(adminExistente.getId());
@@ -131,9 +128,8 @@ public class FormularioAdministrador extends JDialog {
                 a.setPassword(pwd);
             }
             if (controller.actualizar(a)) {
+                JOptionPane.showMessageDialog(this, "Administrador actualizado exitosamente.");
                 dispose();
-            } else {
-                JOptionPane.showMessageDialog(this, "Error al actualizar administrador.", "Error", JOptionPane.ERROR_MESSAGE);
             }
         }
     }

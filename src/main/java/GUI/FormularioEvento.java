@@ -210,10 +210,16 @@ public class FormularioEvento extends JDialog {
         e.setSalonId(((Salon) cbSalon.getSelectedItem()).getId());
 
         if (eventoExistente == null) {
-            if (controller.agregar(e)) dispose();
+            if (controller.agregar(e)) {
+                JOptionPane.showMessageDialog(this, "Evento guardado exitosamente.");
+                dispose();
+            }
         } else {
             e.setId(eventoExistente.getId());
-            if (controller.actualizar(e)) dispose();
+            if (controller.actualizar(e)) {
+                JOptionPane.showMessageDialog(this, "Evento actualizado exitosamente.");
+                dispose();
+            }
         }
     }
 }

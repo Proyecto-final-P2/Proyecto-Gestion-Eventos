@@ -24,31 +24,28 @@ public class ClienteController {
         catch (Exception ex) { JOptionPane.showMessageDialog(null, "Error: " + ex.getMessage()); return List.of(); }
     }
 
-    // guarda un nuevo cliente en la bd
+    // guarda un nuevo cliente en la bd validando unicidad
     public boolean agregar(Cliente c) {
-        try { dao.insertar(c); JOptionPane.showMessageDialog(null, "Cliente agregado."); return true; }
-        catch (Exception ex) { JOptionPane.showMessageDialog(null, "Error: " + ex.getMessage()); return false; }
-    }
-
-    // registra un cliente validando unicidad de dni y email
-    public String registrarCliente(Cliente c) {
         try {
             if (dao.buscarPorDni(c.getDni()) != null) {
-                return "Error: El DNI ya está registrado.";
+                JOptionPane.showMessageDialog(null, "Error: El DNI ya está registrado.", "Error", JOptionPane.ERROR_MESSAGE);
+                return false;
             }
             if (dao.buscarPorEmail(c.getEmail()) != null) {
-                return "Error: El Email ya está registrado.";
+                JOptionPane.showMessageDialog(null, "Error: El Email ya está registrado.", "Error", JOptionPane.ERROR_MESSAGE);
+                return false;
             }
             dao.insertar(c);
-            return "OK";
+            return true;
         } catch (Exception ex) {
-            return "Error en la base de datos: " + ex.getMessage();
+            JOptionPane.showMessageDialog(null, "Error en la base de datos: " + ex.getMessage());
+            return false;
         }
     }
 
     // actualiza los datos de un cliente que ya existe
     public boolean actualizar(Cliente c) {
-        try { dao.actualizar(c); JOptionPane.showMessageDialog(null, "Cliente actualizado."); return true; }
+        try { dao.actualizar(c); return true; }
         catch (Exception ex) { JOptionPane.showMessageDialog(null, "Error: " + ex.getMessage()); return false; }
     }
 

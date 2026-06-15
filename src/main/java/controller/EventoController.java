@@ -43,7 +43,6 @@ public class EventoController {
     public boolean agregar(Evento e) {
         try {
             dao.insertar(e);
-            JOptionPane.showMessageDialog(null, "Evento agregado.");
             return true;
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(null, "Error al agregar evento: " + ex.getMessage());
@@ -55,7 +54,6 @@ public class EventoController {
     public boolean actualizar(Evento e) {
         try {
             dao.actualizar(e);
-            JOptionPane.showMessageDialog(null, "Evento actualizado.");
             return true;
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(null, "Error al actualizar evento: " + ex.getMessage());

@@ -19,20 +19,22 @@ public class AdministradorController {
         catch (Exception ex) { JOptionPane.showMessageDialog(null, "Error: " + ex.getMessage()); return List.of(); }
     }
 
-    public String registrar(Administrador a) {
+    public boolean agregar(Administrador a) {
         try {
             if (dao.buscarPorEmail(a.getEmail()) != null) {
-                return "Error: El Email ya está registrado.";
+                JOptionPane.showMessageDialog(null, "Error: El Email ya está registrado.", "Error", JOptionPane.ERROR_MESSAGE);
+                return false;
             }
             dao.insertar(a);
-            return "OK";
+            return true;
         } catch (Exception ex) {
-            return "Error en la base de datos: " + ex.getMessage();
+            JOptionPane.showMessageDialog(null, "Error en la base de datos: " + ex.getMessage());
+            return false;
         }
     }
 
     public boolean actualizar(Administrador a) {
-        try { dao.actualizar(a); JOptionPane.showMessageDialog(null, "Administrador actualizado."); return true; }
+        try { dao.actualizar(a); return true; }
         catch (Exception ex) { JOptionPane.showMessageDialog(null, "Error: " + ex.getMessage()); return false; }
     }
 

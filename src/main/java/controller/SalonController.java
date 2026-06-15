@@ -34,7 +34,6 @@ public class SalonController {
     public boolean agregar(Salon s) {
         try {
             dao.insertar(s);
-            JOptionPane.showMessageDialog(null, "Salón agregado.");
             return true;
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(null, "Error al agregar salón: " + ex.getMessage());
@@ -46,7 +45,6 @@ public class SalonController {
     public boolean actualizar(Salon s) {
         try {
             dao.actualizar(s);
-            JOptionPane.showMessageDialog(null, "Salón actualizado.");
             return true;
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(null, "Error al actualizar salón: " + ex.getMessage());
