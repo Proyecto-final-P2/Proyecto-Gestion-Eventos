@@ -37,6 +37,16 @@ public class InvitadoController {
         }
     }
 
+    // busca invitados por DNI en un evento específico
+    public List<Invitado> buscarPorDni(String dni, int eventoId) {
+        try {
+            return dao.buscarPorDni(dni, eventoId);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(null, "Error al buscar invitados: " + ex.getMessage());
+            return List.of();
+        }
+    }
+
     // lista invitados de un cliente específico (método existente)
     public List<Invitado> listarPorCliente(int clienteId) {
         try {

@@ -44,11 +44,6 @@ public class FormularioInvitado extends JDialog {
     }
 
     private void initComponents() {
-        setMinimumSize(new Dimension(420, 400));
-        pack();
-        setLocationRelativeTo(getParent());
-        setResizable(false);
-
         JPanel panel = new JPanel(new GridBagLayout());
         panel.setBorder(BorderFactory.createEmptyBorder(20, 25, 10, 25));
         GridBagConstraints gbc = new GridBagConstraints();
@@ -59,11 +54,11 @@ public class FormularioInvitado extends JDialog {
 
         // DNI
         txtDni = new JTextField();
-        agregarCampo(panel, gbc, 0, "DNI:", txtDni);
+        agregarCampo(panel, gbc, 0, "DNI (*):", txtDni);
 
         // Nombre y Apellido
         txtNombreApellido = new JTextField();
-        agregarCampo(panel, gbc, 2, "Nombre y Apellido:", txtNombreApellido);
+        agregarCampo(panel, gbc, 2, "Nombre y Apellido (*):", txtNombreApellido);
 
         // Email
         txtEmail = new JTextField();
@@ -77,13 +72,13 @@ public class FormularioInvitado extends JDialog {
         comboAsistencia = new JComboBox<>(new String[]{
             "confirmado", "pendiente de confirmacion", "cancelado"
         });
-        agregarCampo(panel, gbc, 8, "Asistencia:", comboAsistencia);
+        agregarCampo(panel, gbc, 8, "Asistencia (*):", comboAsistencia);
 
         // Preferencia de Menú
         comboMenu = new JComboBox<>(new String[]{
             "Celiaco", "Vegetariano", "Vegano", "Clasico", "Infantil"
         });
-        agregarCampo(panel, gbc, 10, "Preferencia de Menú:", comboMenu);
+        agregarCampo(panel, gbc, 10, "Preferencia de Menú (*):", comboMenu);
 
         // Botones
         JButton btnGuardar  = new JButton("Guardar");
@@ -102,6 +97,11 @@ public class FormularioInvitado extends JDialog {
         btnCancelar.addActionListener(e -> dispose());
 
         add(panel);
+
+        setMinimumSize(new Dimension(420, 480));
+        pack();
+        setLocationRelativeTo(getParent());
+        setResizable(false);
     }
 
     // helper para agregar label + campo con GridBagLayout
@@ -138,10 +138,6 @@ public class FormularioInvitado extends JDialog {
         }
         if (nombre.isEmpty()) {
             JOptionPane.showMessageDialog(this, "El Nombre y Apellido es obligatorio.", "Error de validación", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-        if (email.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "El Email es obligatorio.", "Error de validación", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
