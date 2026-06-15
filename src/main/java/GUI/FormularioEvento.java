@@ -19,8 +19,8 @@ public class FormularioEvento extends JDialog {
     private final Evento eventoExistente; // null si es alta
 
     private JTextField txtTipo;
-    private JTextField txtFecha;
-    private JTextField txtHorario;
+    private JSpinner spinFecha;
+    private JSpinner spinHorario;
     private JTextField txtCantInvitados;
     private JComboBox<String> cbEstado;
     private JTextField txtCostoFinal;
@@ -56,35 +56,14 @@ public class FormularioEvento extends JDialog {
         gbc.gridx = 0;
 
         txtTipo          = new JTextField();
-        txtFecha         = new JTextField("YYYY-MM-DD");
-        txtFecha.setForeground(Color.GRAY);
-        txtFecha.addFocusListener(new java.awt.event.FocusAdapter() {
-            @Override public void focusGained(java.awt.event.FocusEvent evt) {
-                if (txtFecha.getText().equals("YYYY-MM-DD")) {
-                    txtFecha.setText(""); txtFecha.setForeground(Color.BLACK);
-                }
-            }
-            @Override public void focusLost(java.awt.event.FocusEvent evt) {
-                if (txtFecha.getText().isEmpty()) {
-                    txtFecha.setForeground(Color.GRAY); txtFecha.setText("YYYY-MM-DD");
-                }
-            }
-        });
+        
+        spinFecha = new JSpinner(new SpinnerDateModel());
+        JSpinner.DateEditor dateEditor = new JSpinner.DateEditor(spinFecha, "yyyy-MM-dd");
+        spinFecha.setEditor(dateEditor);
 
-        txtHorario       = new JTextField("HH:mm:ss");
-        txtHorario.setForeground(Color.GRAY);
-        txtHorario.addFocusListener(new java.awt.event.FocusAdapter() {
-            @Override public void focusGained(java.awt.event.FocusEvent evt) {
-                if (txtHorario.getText().equals("HH:mm:ss")) {
-                    txtHorario.setText(""); txtHorario.setForeground(Color.BLACK);
-                }
-            }
-            @Override public void focusLost(java.awt.event.FocusEvent evt) {
-                if (txtHorario.getText().isEmpty()) {
-                    txtHorario.setForeground(Color.GRAY); txtHorario.setText("HH:mm:ss");
-                }
-            }
-        });
+        spinHorario = new JSpinner(new SpinnerDateModel());
+        JSpinner.DateEditor timeEditor = new JSpinner.DateEditor(spinHorario, "HH:mm");
+        spinHorario.setEditor(timeEditor);
 
         txtCantInvitados = new JTextField();
         cbEstado         = new JComboBox<>(new String[]{"confirmado", "pendiente de confirmacion", "cancelado"});
@@ -92,14 +71,14 @@ public class FormularioEvento extends JDialog {
         cbCliente        = new JComboBox<>();
         cbSalon          = new JComboBox<>();
 
-        agregarCampo(panel, gbc, 0,  "Tipo de Evento:", txtTipo);
-        agregarCampo(panel, gbc, 2,  "Fecha (YYYY-MM-DD):", txtFecha);
-        agregarCampo(panel, gbc, 4,  "Horario (HH:mm:ss):", txtHorario);
-        agregarCampo(panel, gbc, 6,  "Cant. Invitados:", txtCantInvitados);
-        agregarCampo(panel, gbc, 8,  "Estado:", cbEstado);
-        agregarCampo(panel, gbc, 10, "Costo Final:", txtCostoFinal);
-        agregarCampo(panel, gbc, 12, "Cliente:", cbCliente);
-        agregarCampo(panel, gbc, 14, "Salón:", cbSalon);
+        agregarCampo(panel, gbc, 0,  "Tipo de Evento (*):", txtTipo);
+        agregarCampo(panel, gbc, 2,  "Fecha (*):", spinFecha);
+        agregarCampo(panel, gbc, 4,  "Horario (*):", spinHorario);
+        agregarCampo(panel, gbc, 6,  "Cant. Invitados (*):", txtCantInvitados);
+        agregarCampo(panel, gbc, 8,  "Estado (*):", cbEstado);
+        agregarCampo(panel, gbc, 10, "Costo Final (*):", txtCostoFinal);
+        agregarCampo(panel, gbc, 12, "Cliente (*):", cbCliente);
+        agregarCampo(panel, gbc, 14, "Salón (*):", cbSalon);
 
         JButton btnGuardar  = new JButton("Guardar");
         JButton btnCancelar = new JButton("Cancelar");
@@ -146,10 +125,16 @@ public class FormularioEvento extends JDialog {
 
     private void precargarCampos(Evento e) {
         txtTipo.setText(e.getTipo());
-        txtFecha.setForeground(Color.BLACK);
-        txtFecha.setText(e.getFecha().toString());
-        txtHorario.setForeground(Color.BLACK);
-        txtHorario.setText(e.getHorario().toString());
+        
+        try {
+            java.util.Date d = java.sql.Date.valueOf(e.getFecha());
+            spinFecha.setValue(d);
+        } catch(Exception ex) {}
+
+        try {
+            java.util.Date t = java.sql.Time.valueOf(e.getHorario());
+            spinHorario.setValue(t);
+        } catch(Exception ex) {}
         txtCantInvitados.setText(String.valueOf(e.getCantInvitados()));
         cbEstado.setSelectedItem(e.getEstado());
         txtCostoFinal.setText(String.valueOf(e.getCostoFinal()));
@@ -170,12 +155,10 @@ public class FormularioEvento extends JDialog {
 
     private void guardar() {
         String tipo      = txtTipo.getText().trim();
-        String fecha     = txtFecha.getText().trim();
-        String horario   = txtHorario.getText().trim();
         String invitados = txtCantInvitados.getText().trim();
         String costo     = txtCostoFinal.getText().trim();
 
-        if (tipo.isEmpty() || fecha.equals("YYYY-MM-DD") || horario.equals("HH:mm:ss") || invitados.isEmpty() || costo.isEmpty()) {
+        if (tipo.isEmpty() || invitados.isEmpty() || costo.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Todos los campos son obligatorios.", "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
@@ -196,10 +179,18 @@ public class FormularioEvento extends JDialog {
         try { costoNum = Double.parseDouble(costo); } 
         catch (Exception ex) { JOptionPane.showMessageDialog(this, "Costo debe ser numérico."); return; }
 
-        try { date = java.time.LocalDate.parse(fecha); } 
+        try { 
+            java.util.Date d = (java.util.Date) spinFecha.getValue();
+            date = new java.sql.Date(d.getTime()).toLocalDate(); 
+        } 
         catch (Exception ex) { JOptionPane.showMessageDialog(this, "Formato de fecha inválido."); return; }
 
-        try { time = java.time.LocalTime.parse(horario); } 
+        try { 
+            java.util.Date t = (java.util.Date) spinHorario.getValue();
+            // LocalTime a partir de Date formateado (para no tener problemas de zona horaria)
+            String timeStr = new java.text.SimpleDateFormat("HH:mm").format(t);
+            time = java.time.LocalTime.parse(timeStr); 
+        } 
         catch (Exception ex) { JOptionPane.showMessageDialog(this, "Formato de horario inválido."); return; }
 
         Evento e = new Evento();

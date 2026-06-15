@@ -54,31 +54,31 @@ public class FormularioInvitado extends JDialog {
 
         // DNI
         txtDni = new JTextField();
-        agregarCampo(panel, gbc, 0, "DNI (obligatorio):", txtDni);
+        agregarCampo(panel, gbc, 0, "DNI (*):", txtDni);
 
         // Nombre y Apellido
         txtNombreApellido = new JTextField();
-        agregarCampo(panel, gbc, 2, "Nombre y Apellido (obligatorio):", txtNombreApellido);
+        agregarCampo(panel, gbc, 2, "Nombre y Apellido (*):", txtNombreApellido);
 
         // Email
         txtEmail = new JTextField();
-        agregarCampo(panel, gbc, 4, "Email (opcional):", txtEmail);
+        agregarCampo(panel, gbc, 4, "Email:", txtEmail);
 
         // Teléfono
         txtTelefono = new JTextField();
-        agregarCampo(panel, gbc, 6, "Teléfono (obligatorio):", txtTelefono);
+        agregarCampo(panel, gbc, 6, "Teléfono:", txtTelefono);
 
         // Asistencia
         comboAsistencia = new JComboBox<>(new String[]{
             "confirmado", "pendiente de confirmacion", "cancelado"
         });
-        agregarCampo(panel, gbc, 8, "Asistencia:", comboAsistencia);
+        agregarCampo(panel, gbc, 8, "Asistencia (*):", comboAsistencia);
 
         // Preferencia de Menú
         comboMenu = new JComboBox<>(new String[]{
             "Celiaco", "Vegetariano", "Vegano", "Clasico", "Infantil"
         });
-        agregarCampo(panel, gbc, 10, "Preferencia de Menú:", comboMenu);
+        agregarCampo(panel, gbc, 10, "Preferencia de Menú (*):", comboMenu);
 
         // Botones
         JButton btnGuardar  = new JButton("Guardar");
@@ -138,10 +138,6 @@ public class FormularioInvitado extends JDialog {
         }
         if (nombre.isEmpty()) {
             JOptionPane.showMessageDialog(this, "El Nombre y Apellido es obligatorio.", "Error de validación", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-        if (tel.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "El Teléfono es obligatorio.", "Error de validación", JOptionPane.ERROR_MESSAGE);
             return;
         }
 

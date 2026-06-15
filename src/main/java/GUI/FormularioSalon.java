@@ -53,12 +53,12 @@ public class FormularioSalon extends JDialog {
         txtCantMesas  = new JTextField();
         txtCosto      = new JTextField();
 
-        agregarCampo(panel, gbc, 0,  "Nombre:", txtNombre);
-        agregarCampo(panel, gbc, 2,  "Dirección:", txtDireccion);
-        agregarCampo(panel, gbc, 4,  "Capacidad:", txtCapacidad);
-        agregarCampo(panel, gbc, 6,  "Sillas:", txtCantSillas);
-        agregarCampo(panel, gbc, 8,  "Mesas:", txtCantMesas);
-        agregarCampo(panel, gbc, 10, "Costo:", txtCosto);
+        agregarCampo(panel, gbc, 0,  "Nombre (*):", txtNombre);
+        agregarCampo(panel, gbc, 2,  "Dirección (*):", txtDireccion);
+        agregarCampo(panel, gbc, 4,  "Capacidad (*):", txtCapacidad);
+        agregarCampo(panel, gbc, 6,  "Sillas (*):", txtCantSillas);
+        agregarCampo(panel, gbc, 8,  "Mesas (*):", txtCantMesas);
+        agregarCampo(panel, gbc, 10, "Costo (*):", txtCosto);
 
         JButton btnGuardar  = new JButton("Guardar");
         JButton btnCancelar = new JButton("Cancelar");

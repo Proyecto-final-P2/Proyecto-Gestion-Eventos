@@ -53,10 +53,10 @@ public class FormularioCliente extends JDialog {
         txtEmail          = new JTextField();
         txtTelefono       = new JTextField();
 
-        agregarCampo(panel, gbc, 0, "DNI:",              txtDni);
-        agregarCampo(panel, gbc, 2, "Nombre y Apellido:", txtNombreApellido);
+        agregarCampo(panel, gbc, 0, "DNI (*):",              txtDni);
+        agregarCampo(panel, gbc, 2, "Nombre y Apellido (*):", txtNombreApellido);
         agregarCampo(panel, gbc, 4, "Email:",             txtEmail);
-        agregarCampo(panel, gbc, 6, "Teléfono:",          txtTelefono);
+        agregarCampo(panel, gbc, 6, "Teléfono (*):",          txtTelefono);
 
         JButton btnGuardar  = new JButton("Guardar");
         JButton btnCancelar = new JButton("Cancelar");
@@ -100,8 +100,8 @@ public class FormularioCliente extends JDialog {
         String email  = txtEmail.getText().trim();
         String tel    = txtTelefono.getText().trim();
 
-        if (dni.isEmpty() || nombre.isEmpty() || email.isEmpty() || tel.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Todos los campos son obligatorios.", "Error de validación", JOptionPane.ERROR_MESSAGE);
+        if (dni.isEmpty() || nombre.isEmpty() || tel.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "DNI, Nombre y Teléfono son obligatorios.", "Error de validación", JOptionPane.ERROR_MESSAGE);
             return;
         }
         if (!dni.matches("\\d+")) {
