@@ -33,6 +33,18 @@ public class AdministradorController {
         }
     }
 
+    public String registrar(Administrador a) {
+        try {
+            if (dao.buscarPorEmail(a.getEmail()) != null) {
+                return "El Email ya está registrado.";
+            }
+            dao.insertar(a);
+            return "OK";
+        } catch (Exception ex) {
+            return "Error en la base de datos: " + ex.getMessage();
+        }
+    }
+
     public boolean actualizar(Administrador a) {
         try { dao.actualizar(a); return true; }
         catch (Exception ex) { JOptionPane.showMessageDialog(null, "Error: " + ex.getMessage()); return false; }
