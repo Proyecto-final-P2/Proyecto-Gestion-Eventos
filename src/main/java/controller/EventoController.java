@@ -71,4 +71,14 @@ public class EventoController {
             return false;
         }
     }
+
+    // verifica si hay superposición
+    public boolean existeSuperposicion(int salonId, java.time.LocalDate fecha, int eventoIdIgnorar) {
+        try {
+            return dao.existeSuperposicion(salonId, fecha, eventoIdIgnorar);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(null, "Error al verificar superposición: " + ex.getMessage());
+            return true; // En caso de error, bloqueamos por seguridad
+        }
+    }
 }

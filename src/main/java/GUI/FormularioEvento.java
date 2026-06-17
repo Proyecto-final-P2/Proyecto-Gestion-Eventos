@@ -199,6 +199,21 @@ public class FormularioEvento extends JDialog {
         } 
         catch (Exception ex) { JOptionPane.showMessageDialog(this, "Formato de horario inválido."); return; }
 
+        Salon salonSeleccionado = (Salon) cbSalon.getSelectedItem();
+
+        // 1. Validar capacidad del salón
+        if (cant > salonSeleccionado.getCapacidad()) {
+            JOptionPane.showMessageDialog(this, "La cantidad de invitados (" + cant + ") supera la capacidad del salón (" + salonSeleccionado.getCapacidad() + ").", "Error de Capacidad", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        // 2. Validar superposición temporal
+        int idActual = (eventoExistente != null) ? eventoExistente.getId() : -1;
+        if (controller.existeSuperposicion(salonSeleccionado.getId(), date, idActual)) {
+            JOptionPane.showMessageDialog(this, "El salón ya se encuentra reservado para esa fecha. Por favor, seleccione otro salón u otra fecha.", "Superposición de Evento", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
         Evento e = new Evento();
         e.setTipo(tipo);
         e.setFecha(date);
