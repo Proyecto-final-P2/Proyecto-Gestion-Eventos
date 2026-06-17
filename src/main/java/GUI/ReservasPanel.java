@@ -36,7 +36,7 @@ public class ReservasPanel extends JPanel {
         add(titulo, BorderLayout.NORTH);
 
         // --- TABLA (centro) ---
-        String[] columnas = {"ID", "Fecha", "Hora Inicio", "Hora Fin", "Monto"};
+        String[] columnas = {"ID", "Fecha", "Cliente", "Salón", "Hora Inicio", "Hora Fin", "Monto"};
         modeloTabla = new DefaultTableModel(columnas, 0) {
             @Override
             public boolean isCellEditable(int r, int c) {
@@ -83,6 +83,8 @@ public class ReservasPanel extends JPanel {
                 modeloTabla.addRow(new Object[]{
                     r.getR_ID(),
                     r.getR_Fecha().toString(),
+                    r.getClienteNombre(),
+                    r.getSalonNombre(),
                     r.getR_HoraInicio().toString(),
                     r.getR_HoraFin().toString(),
                     "$" + String.format("%.2f", r.getR_Monto())
@@ -130,6 +132,8 @@ public class ReservasPanel extends JPanel {
 class FormularioReserva extends JDialog {
     private final ReservaDAO dao;
 
+    private JComboBox<model.Cliente> comboCliente;
+    private JComboBox<model.Salon> comboSalon;
     private JTextField txtFecha;
     private JTextField txtHoraInicio;
     private JTextField txtHoraFin;
@@ -142,7 +146,7 @@ class FormularioReserva extends JDialog {
     }
 
     private void initComponents() {
-        setMinimumSize(new Dimension(380, 300));
+        setMinimumSize(new Dimension(380, 380));
         setResizable(false);
 
         JPanel panel = new JPanel(new GridBagLayout());
@@ -152,15 +156,21 @@ class FormularioReserva extends JDialog {
         gbc.weightx = 1.0;
         gbc.gridx = 0;
 
+        comboCliente = new JComboBox<>();
+        comboSalon = new JComboBox<>();
         txtFecha = new JTextField(LocalDate.now().toString());
         txtHoraInicio = new JTextField("18:00");
         txtHoraFin = new JTextField("23:00");
         txtMonto = new JTextField();
 
-        agregarCampo(panel, gbc, 0, "Fecha (AAAA-MM-DD) (*):", txtFecha);
-        agregarCampo(panel, gbc, 2, "Hora Inicio (HH:MM) (*):", txtHoraInicio);
-        agregarCampo(panel, gbc, 4, "Hora Fin (HH:MM) (*):", txtHoraFin);
-        agregarCampo(panel, gbc, 6, "Monto (*):", txtMonto);
+        populateCombos();
+
+        agregarCampo(panel, gbc, 0, "Cliente (*):", comboCliente);
+        agregarCampo(panel, gbc, 2, "Salón (*):", comboSalon);
+        agregarCampo(panel, gbc, 4, "Fecha (AAAA-MM-DD) (*):", txtFecha);
+        agregarCampo(panel, gbc, 6, "Hora Inicio (HH:MM) (*):", txtHoraInicio);
+        agregarCampo(panel, gbc, 8, "Hora Fin (HH:MM) (*):", txtHoraFin);
+        agregarCampo(panel, gbc, 10, "Monto (*):", txtMonto);
 
         JButton btnGuardar = new JButton("Guardar");
         JButton btnCancelar = new JButton("Cancelar");
@@ -170,7 +180,7 @@ class FormularioReserva extends JDialog {
         panelBotones.add(btnCancelar);
         panelBotones.add(btnGuardar);
 
-        gbc.gridy = 8;
+        gbc.gridy = 12;
         gbc.insets = new Insets(15, 5, 5, 5);
         panel.add(panelBotones, gbc);
 
@@ -180,6 +190,23 @@ class FormularioReserva extends JDialog {
         add(panel);
         pack();
         setLocationRelativeTo(getParent());
+    }
+
+    // Carga dinámicamente los combos de Clientes y Salones usando sus respectivos DAOs
+    private void populateCombos() {
+        try {
+            List<model.Cliente> clientes = new repository.ClienteDAO().listar();
+            for (model.Cliente c : clientes) {
+                comboCliente.addItem(c);
+            }
+
+            List<model.Salon> salones = new repository.SalonDAO().listar();
+            for (model.Salon s : salones) {
+                comboSalon.addItem(s);
+            }
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(this, "Error al cargar opciones del formulario: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private void agregarCampo(JPanel panel, GridBagConstraints gbc, int fila, String label, JComponent campo) {
@@ -193,10 +220,17 @@ class FormularioReserva extends JDialog {
 
     // Guarda los datos de la reserva ingresada en la base de datos
     private void guardar() {
+        model.Cliente clienteSel = (model.Cliente) comboCliente.getSelectedItem();
+        model.Salon salonSel = (model.Salon) comboSalon.getSelectedItem();
         String fechaStr = txtFecha.getText().trim();
         String inicioStr = txtHoraInicio.getText().trim();
         String finStr = txtHoraFin.getText().trim();
         String montoStr = txtMonto.getText().trim();
+
+        if (clienteSel == null || salonSel == null) {
+            JOptionPane.showMessageDialog(this, "Debe seleccionar un Cliente y un Salón.", "Error de validación", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
 
         if (fechaStr.isEmpty() || inicioStr.isEmpty() || finStr.isEmpty() || montoStr.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Todos los campos son obligatorios.", "Error de validación", JOptionPane.ERROR_MESSAGE);
@@ -252,6 +286,8 @@ class FormularioReserva extends JDialog {
         r.setR_HoraInicio(horaInicio);
         r.setR_HoraFin(horaFin);
         r.setR_Monto(monto);
+        r.setR_ClienteID(clienteSel.getId());
+        r.setR_SalonID(salonSel.getId());
 
         try {
             dao.insertar(r);
