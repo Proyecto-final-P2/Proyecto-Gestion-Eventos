@@ -18,9 +18,9 @@ public class ClienteController {
         catch (Exception ex) { JOptionPane.showMessageDialog(null, "Error: " + ex.getMessage()); return List.of(); }
     }
 
-    // busca clientes que coincidan con un nombre
-    public List<Cliente> buscar(String nombre) {
-        try { return dao.buscarPorNombre(nombre); }
+    // busca clientes que coincidan con un dni
+    public List<Cliente> buscar(String dni) {
+        try { return dao.buscarPorDni(dni); }
         catch (Exception ex) { JOptionPane.showMessageDialog(null, "Error: " + ex.getMessage()); return List.of(); }
     }
 
