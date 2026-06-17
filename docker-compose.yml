@@ -11,7 +11,7 @@ services:
     ports:
       - "3306:3306"
     volumes:
-      - ./database/TPBD_gestion_de_eventos.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./database:/docker-entrypoint-initdb.d
       - gestor_db_data:/var/lib/mysql
 
 volumes:

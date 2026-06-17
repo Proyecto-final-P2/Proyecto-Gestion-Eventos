@@ -5,39 +5,44 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * DAO para acceso a datos de la tabla Reserva.
+ */
 public class ReservaDAO {
 
-    // registrar reserva en BD
-    public String crearReserva(int id, java.time.LocalDate fecha,
-                                java.time.LocalTime inicio, java.time.LocalTime fin,
-                                double monto) throws SQLException {
-        String sql = "{CALL CrearReservaConelID(?,?,?,?,?,?)}";
-        try (Connection con = Util.getConnection();
-             CallableStatement cs = con.prepareCall(sql)) {
-            cs.setInt(1, id);
-            cs.setDate(2, Date.valueOf(fecha));
-            cs.setTime(3, Time.valueOf(inicio));
-            cs.setTime(4, Time.valueOf(fin));
-            cs.setDouble(5, monto);
-            cs.registerOutParameter(6, Types.VARCHAR);
-            cs.execute();
-            return cs.getString(6); // "Reserva creada exitosamente." o error
-        }
-    }
-
-    // lista todas las reservas de la BD
+    // Lista todas las reservas mapeadas a objetos Reserva, vinculando Cliente y Salon
     public List<Reserva> listar() throws SQLException {
         List<Reserva> lista = new ArrayList<>();
-        String sql = "SELECT * FROM Reserva";
+        String sql = "SELECT r.*, c.C_NombreApellido, s.SA_Nombre " +
+                     "FROM Reserva r " +
+                     "JOIN Cliente c ON r.R_ClienteID = c.C_ID " +
+                     "JOIN Salon s ON r.R_SalonID = s.SA_ID";
         try (Connection con = Util.getConnection();
              Statement st = con.createStatement();
              ResultSet rs = st.executeQuery(sql)) {
-            while (rs.next()) lista.add(mapear(rs));
+            while (rs.next()) {
+                lista.add(mapear(rs));
+            }
         }
         return lista;
     }
 
-    // elimina reserva de la BD
+    // Inserta una nueva reserva con relación a Cliente y Salon
+    public void insertar(Reserva r) throws SQLException {
+        String sql = "INSERT INTO Reserva (R_Fecha, R_HoraInicio, R_HoraFin, R_Monto, R_ClienteID, R_SalonID) VALUES (?, ?, ?, ?, ?, ?)";
+        try (Connection con = Util.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setDate(1, Date.valueOf(r.getR_Fecha()));
+            ps.setTime(2, Time.valueOf(r.getR_HoraInicio()));
+            ps.setTime(3, Time.valueOf(r.getR_HoraFin()));
+            ps.setDouble(4, r.getR_Monto());
+            ps.setInt(5, r.getR_ClienteID());
+            ps.setInt(6, r.getR_SalonID());
+            ps.executeUpdate();
+        }
+    }
+
+    // Elimina una reserva por ID
     public void eliminar(int id) throws SQLException {
         String sql = "DELETE FROM Reserva WHERE R_ID = ?";
         try (Connection con = Util.getConnection();
@@ -47,14 +52,18 @@ public class ReservaDAO {
         }
     }
 
-    // convierte fila de la BD en objeto Reserva
+    // Mapea una fila de ResultSet a un objeto Reserva completo
     private Reserva mapear(ResultSet rs) throws SQLException {
         return new Reserva(
             rs.getInt("R_ID"),
             rs.getDate("R_Fecha").toLocalDate(),
             rs.getTime("R_HoraInicio").toLocalTime(),
             rs.getTime("R_HoraFin").toLocalTime(),
-            rs.getDouble("R_Monto")
+            rs.getDouble("R_Monto"),
+            rs.getInt("R_ClienteID"),
+            rs.getInt("R_SalonID"),
+            rs.getString("C_NombreApellido"),
+            rs.getString("SA_Nombre")
         );
     }
 }
