@@ -1,11 +1,10 @@
 -- Crear base de datos
-SET NAMES utf8mb4;
 CREATE DATABASE IF NOT EXISTS salonDeEventos;
 USE salonDeEventos;
 
 -- Tabla Salon
 CREATE TABLE Salon (
-  SA_ID INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  SA_ID INT NOT NULL PRIMARY KEY,
   SA_Direccion VARCHAR(45) NOT NULL,
   SA_Nombre VARCHAR(45) NOT NULL,
   SA_Capacidad INT NOT NULL,
@@ -14,13 +13,26 @@ CREATE TABLE Salon (
   SA_Costo DECIMAL(10,2) NOT NULL
 );
 
+-- Tabla Cliente
+CREATE TABLE Cliente (
+  C_ID INT NOT NULL PRIMARY KEY,
+  C_DNI INT NOT NULL,
+  C_NombreApellido VARCHAR(45) NOT NULL,
+  C_Email VARCHAR(255) NOT NULL,
+  C_Telefono VARCHAR(15) NOT NULL
+);
+
 -- Tabla Reserva
 CREATE TABLE Reserva (
-  R_ID INT NOT NULL PRIMARY KEY,
+  R_ID INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   R_Fecha DATE NOT NULL,
   R_HoraInicio TIME NOT NULL,
   R_HoraFin TIME NOT NULL,
-  R_Monto DECIMAL(10,2) NOT NULL
+  R_Monto DECIMAL(10,2) NOT NULL,
+  R_ClienteID INT NOT NULL,
+  R_SalonID INT NOT NULL,
+  FOREIGN KEY (R_ClienteID) REFERENCES Cliente (C_ID),
+  FOREIGN KEY (R_SalonID) REFERENCES Salon (SA_ID)
 );
 
 -- Tabla Pago
@@ -32,23 +44,6 @@ CREATE TABLE Pago (
   P_MetodoPago VARCHAR(50) NOT NULL DEFAULT 'Efectivo',
   P_FechaPago DATE NOT NULL DEFAULT (CURRENT_DATE),
   FOREIGN KEY (Reserva_R_ID) REFERENCES Reserva (R_ID)
-);
-
--- Tabla Cliente
-CREATE TABLE Cliente (
-  C_ID INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  C_DNI INT NOT NULL,
-  C_NombreApellido VARCHAR(45) NOT NULL,
-  C_Email VARCHAR(255) NOT NULL,
-  C_Telefono VARCHAR(15) NOT NULL
-);
-
--- Tabla Administrador
-CREATE TABLE Administrador (
-  A_ID INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  A_NombreApellido VARCHAR(45) NOT NULL,
-  A_Email VARCHAR(255) NOT NULL,
-  A_Password VARCHAR(255) NOT NULL
 );
 
 -- Tabla Servicios
@@ -63,7 +58,7 @@ CREATE TABLE Servicios (
 
 -- Tabla Invitado
 CREATE TABLE Invitado (
-  IN_ID INT NOT NULL PRIMARY KEY,
+  IN_ID INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   IN_DNI INT NOT NULL,
   IN_NombreApellido VARCHAR(45) NOT NULL,
   IN_Email VARCHAR(255) NOT NULL,
@@ -74,7 +69,7 @@ CREATE TABLE Invitado (
 
 -- Tabla Evento
 CREATE TABLE Evento (
-  E_ID INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  E_ID INT NOT NULL PRIMARY KEY,
   E_Fecha DATE NOT NULL,
   E_Horario TIME NOT NULL,
   E_Tipo VARCHAR(45) NOT NULL,
@@ -89,7 +84,7 @@ CREATE TABLE Evento (
 
 -- Tabla Asiste
 CREATE TABLE Asiste (
-  Invitado_IN_ID INT NOT NULL,
+  Invitado_IN_ID INT NULL,
   Evento_E_ID INT NOT NULL,
   PRIMARY KEY (Invitado_IN_ID, Evento_E_ID),
   FOREIGN KEY (Invitado_IN_ID) REFERENCES Invitado (IN_ID),
@@ -124,24 +119,19 @@ VALUES
 (9, 65432187, 'Antonio Díaz', 'antonio.diaz@example.com', 5678901233),
 (10, 76543219, 'Elena Pérez', 'elena.perez@example.com', 6789012344);
 
--- Datos para la tabla Administrador
-INSERT INTO Administrador (A_ID, A_NombreApellido, A_Email, A_Password)
-VALUES 
-(1, 'Admin Principal', 'admin@admin.com', 'admin123');
-
 -- Datos para la tabla Reserva
-INSERT INTO Reserva (R_ID, R_Fecha, R_HoraInicio, R_HoraFin, R_Monto)
+INSERT INTO Reserva (R_ID, R_Fecha, R_HoraInicio, R_HoraFin, R_Monto, R_ClienteID, R_SalonID)
 VALUES 
-(1, '2024-12-01', '18:00:00', '23:00:00', 10000.00),
-(2, '2024-12-05', '19:00:00', '23:59:00', 7500.00),
-(3, '2024-12-10', '17:00:00', '22:00:00', 15000.00);
+(1, '2024-12-01', '18:00:00', '23:00:00', 10000.00, 1, 1),
+(2, '2024-12-05', '19:00:00', '23:59:00', 7500.00, 2, 2),
+(3, '2024-12-10', '17:00:00', '22:00:00', 15000.00, 3, 1);
 
 -- Datos para la tabla Pago
 INSERT INTO Pago (P_ID, P_MontoPagado, Reserva_R_ID, P_Pagador, P_MetodoPago, P_FechaPago)
 VALUES 
-(1, 5000.00, 1, 'Juan Perez', 'Efectivo', '2024-12-01'),
-(2, 7500.00, 2, 'Maria Lopez', 'Transferencia', '2024-12-05'),
-(3, 15000.00, 3, 'Carlos Gomez', 'Otro', '2024-12-10');
+(1, 5000.00, 1, 'Juan Pérez', 'Efectivo', '2024-12-01'),
+(2, 7500.00, 2, 'María López', 'Transferencia', '2024-12-05'),
+(3, 15000.00, 3, 'Carlos Gómez', 'Otro', '2024-12-10');
 
 -- Datos para la tabla Servicios
 INSERT INTO Servicios (SE_ID, SE_Tipo, SE_Proveedor, SE_Costo, SE_Cantidad, SE_Estado)

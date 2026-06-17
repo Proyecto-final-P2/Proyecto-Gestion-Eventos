@@ -47,7 +47,29 @@ public class ReservaDAO {
         }
     }
 
+<<<<<<< Updated upstream
     // convierte fila de la BD en objeto Reserva
+=======
+    // Busca una reserva por ID
+    public Reserva buscarPorId(int id) throws SQLException {
+        String sql = "SELECT r.*, c.C_NombreApellido, s.SA_Nombre " +
+                     "FROM Reserva r " +
+                     "JOIN Cliente c ON r.R_ClienteID = c.C_ID " +
+                     "JOIN Salon s ON r.R_SalonID = s.SA_ID " +
+                     "WHERE r.R_ID = ?";
+        try (Connection con = Util.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return mapear(rs);
+            }
+        }
+        return null;
+    }
+
+
+    // Mapea una fila de ResultSet a un objeto Reserva completo
+>>>>>>> Stashed changes
     private Reserva mapear(ResultSet rs) throws SQLException {
         return new Reserva(
             rs.getInt("R_ID"),

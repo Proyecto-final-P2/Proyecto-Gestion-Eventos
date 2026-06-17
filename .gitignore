@@ -1,1 +1,3 @@
 target/
+.nanostack/
+.idea/  
