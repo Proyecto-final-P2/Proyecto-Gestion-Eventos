@@ -1,0 +1,24 @@
+{
+  "phase": "plan",
+  "summary": {
+    "goal": "Implement full ABM CRUD for Pagos in the Swing Event Manager project.",
+    "scope": "medium",
+    "step_count": 5,
+    "planned_files": [
+      "src/main/java/repository/ReservaDAO.java",
+      "src/main/java/controller/ReservaController.java",
+      "src/main/java/repository/PagoDAO.java",
+      "src/main/java/controller/PagoController.java",
+      "src/main/java/GUI/PagosPanel.java"
+    ],
+    "risks": [
+      "SQL exceptions or input type mismatch crashes when updating/inserting payments without proper field validation or database sync."
+    ],
+    "out_of_scope": [
+      "Modifying external classes or other panels outside the scope of Pagos management."
+    ]
+  },
+  "timestamp": "2026-06-17T17:22:21Z",
+  "project": "/home/jona/Documentos/Programacion/Programacion II/GestorDeEventos",
+  "branch": "NicoGarcia"
+}
