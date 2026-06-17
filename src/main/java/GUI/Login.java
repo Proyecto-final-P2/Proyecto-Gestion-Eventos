@@ -1,7 +1,6 @@
 package GUI;
 
 import controller.LoginController;
-import model.Cliente;
 import javax.swing.*;
 import java.awt.*;
 
@@ -12,8 +11,6 @@ public class Login extends JFrame {
     private JTextField     txtEmail;
     private JPasswordField txtPassword;
     private JButton        btnIngresar;
-    private JTextField     txtDni;
-    private JButton        btnAccederCliente;
     private LoginController controller;
 
     public Login() {
@@ -25,42 +22,63 @@ public class Login extends JFrame {
     private void initComponents() {
         setTitle("Gestor de Eventos - Iniciar Sesión");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setSize(400, 450);
+        setSize(400, 250);
         setLocationRelativeTo(null);
         setResizable(false);
 
+        // Definimos la fuente estándar para toda la ventana
+        Font fuenteBase = new Font("Segoe UI", Font.PLAIN, 14);
+        Font fuenteNegrita = new Font("Segoe UI", Font.BOLD, 14);
+
         JPanel panel = new JPanel(new GridBagLayout());
-        panel.setBorder(BorderFactory.createEmptyBorder(30, 40, 30, 40));
+        panel.setBorder(BorderFactory.createEmptyBorder(20, 30, 20, 30));
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(8, 0, 8, 0);
+        gbc.insets = new Insets(10, 10, 10, 10);
 
         // Título
         JLabel lblTitulo = new JLabel("Gestor de Eventos", SwingConstants.CENTER);
-        lblTitulo.setFont(new Font("Arial", Font.BOLD, 22));
+        lblTitulo.setFont(new Font("Segoe UI", Font.BOLD, 22));
         gbc.gridx = 0; gbc.gridy = 0; gbc.gridwidth = 2;
         panel.add(lblTitulo, gbc);
 
-        // Email
-        gbc.gridwidth = 1; gbc.gridy = 1;
-        panel.add(new JLabel("Email:"), gbc);
-        gbc.gridy = 2;
+        // Email Label
+        gbc.gridwidth = 1;
+        gbc.weightx = 0.0;
+        gbc.gridx = 0; gbc.gridy = 1;
+        JLabel lblEmail = new JLabel("Email:");
+        lblEmail.setFont(fuenteNegrita);
+        panel.add(lblEmail, gbc);
+        
+        // Email Input
+        gbc.weightx = 1.0; // Esto hace que el input ocupe todo el ancho disponible
+        gbc.gridx = 1; gbc.gridy = 1;
         txtEmail = new JTextField(20);
+        txtEmail.setFont(fuenteBase);
         panel.add(txtEmail, gbc);
 
-        // Contraseña
-        gbc.gridy = 3;
-        panel.add(new JLabel("Contraseña:"), gbc);
-        gbc.gridy = 4;
+        // Contraseña Label
+        gbc.weightx = 0.0;
+        gbc.gridx = 0; gbc.gridy = 2;
+        JLabel lblPassword = new JLabel("Contraseña:");
+        lblPassword.setFont(fuenteNegrita);
+        panel.add(lblPassword, gbc);
+        
+        // Contraseña Input
+        gbc.weightx = 1.0;
+        gbc.gridx = 1; gbc.gridy = 2;
         txtPassword = new JPasswordField(20);
+        txtPassword.setFont(fuenteBase);
         panel.add(txtPassword, gbc);
 
         // Botones
-        gbc.gridy = 5;
+        gbc.weightx = 0.0;
+        gbc.gridx = 0; gbc.gridy = 3; gbc.gridwidth = 2;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.anchor = GridBagConstraints.CENTER;
         
         btnIngresar = new JButton("Ingresar");
-        btnIngresar.setFont(new Font("Arial", Font.BOLD, 14));
-        
+        btnIngresar.setFont(fuenteNegrita);
         panel.add(btnIngresar, gbc);
 
         // accion del boton: le pasa el email y clave al controlador
@@ -72,40 +90,6 @@ public class Login extends JFrame {
         txtPassword.addActionListener(e ->
             controller.iniciarSesion(txtEmail.getText(), new String(txtPassword.getPassword()))
         );
-
-        // --- Separador ---
-        gbc.gridy = 6;
-        panel.add(new JSeparator(), gbc);
-
-        // --- Login Cliente ---
-        gbc.gridy = 7;
-        JLabel lblCliente = new JLabel("¿Sos cliente? Ingresá tu DNI", SwingConstants.CENTER);
-        lblCliente.setFont(new Font("Arial", Font.BOLD, 14));
-        panel.add(lblCliente, gbc);
-
-        gbc.gridy = 8;
-        txtDni = new JTextField(20);
-        panel.add(txtDni, gbc);
-
-        gbc.gridy = 9;
-        btnAccederCliente = new JButton("Acceder como cliente");
-        btnAccederCliente.setFont(new Font("Arial", Font.BOLD, 14));
-        panel.add(btnAccederCliente, gbc);
-
-        btnAccederCliente.addActionListener(e -> {
-            try {
-                int dni = Integer.parseInt(txtDni.getText().trim());
-                Cliente cliente = controller.loginCliente(dni);
-                if (cliente == null) {
-                    JOptionPane.showMessageDialog(this, "DNI no encontrado", "Error", JOptionPane.ERROR_MESSAGE);
-                } else {
-                    dispose();
-                    new MenuCliente(cliente).setVisible(true);
-                }
-            } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(this, "El DNI debe ser numérico", "Error", JOptionPane.ERROR_MESSAGE);
-            }
-        });
 
         add(panel);
     }

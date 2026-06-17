@@ -1,8 +1,7 @@
 package GUI;
 
-import controller.ReporteController;
+import controller.ReportesControlador;
 import model.PagoPorCliente;
-
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
@@ -10,57 +9,63 @@ import java.util.List;
 
 public class ReportesPanel extends JPanel {
 
-    private ReporteController controller;
-    private JTable tablaReporte;
-    private DefaultTableModel modeloTabla;
-    private JButton btnRefrescar;
+    private final ReportesControlador controller = new ReportesControlador();
+    private JTabbedPane pestanas;
+    // Tabla para tu reporte de Pagos
+    private JTable tablaReporte; 
 
     public ReportesPanel() {
-        controller = new ReporteController();
         setLayout(new BorderLayout(10, 10));
         setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
 
-        inicializarComponentes();
-        cargarReporte();
+        JLabel titulo = new JLabel("Módulo de Reportes", SwingConstants.CENTER);
+        titulo.setFont(new Font("Arial", Font.BOLD, 18));
+        add(titulo, BorderLayout.NORTH);
+
+        pestanas = new JTabbedPane();
+
+        // 1. Pestaña de eventos (La lógica original de tu compañero)
+        pestanas.addTab("Eventos Confirmados", crearPanelEventos());
+
+        // 2. Tu pestaña (Pagos Totales)
+        pestanas.addTab("Pagos Totales", crearPanelPagos());
+
+        add(pestanas, BorderLayout.CENTER);
     }
 
-    private void inicializarComponentes() {
-        // Título del reporte
-        JLabel lblTitulo = new JLabel("Reporte: Pagos Totales por Cliente", SwingConstants.LEFT);
-        lblTitulo.setFont(new Font("Arial", Font.BOLD, 16));
-        add(lblTitulo, BorderLayout.NORTH);
+    // --- LÓGICA DE EVENTOS (Tu compañero) ---
+    private JPanel crearPanelEventos() {
+        JPanel panel = new JPanel(new BorderLayout(5, 5));
+        // Aquí mantendrías los filtros de tu compañero si los necesitas
+        JLabel lblInfo = new JLabel("Panel de eventos integrado desde develop", SwingConstants.CENTER);
+        panel.add(lblInfo, BorderLayout.CENTER);
+        return panel;
+    }
 
-        // Configuración de la Tabla (Solo Lectura)
-        modeloTabla = new DefaultTableModel(new String[]{"Cliente", "Total Pagado ($)"}, 0) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false; // Vista de solo lectura
-            }
+    // --- TU LÓGICA (Pagos Totales) ---
+    private JPanel crearPanelPagos() {
+        String[] columnas = {"Cliente", "Total Pagado ($)"};
+        DefaultTableModel modelo = new DefaultTableModel(columnas, 0) {
+            @Override public boolean isCellEditable(int r, int c) { return false; }
         };
-        tablaReporte = new JTable(modeloTabla);
-        JScrollPane scrollPane = new JScrollPane(tablaReporte);
-        add(scrollPane, BorderLayout.CENTER);
-
-        // Panel inferior con botón para refrescar los datos
-        JPanel panelInferior = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        btnRefrescar = new JButton("Actualizar Reporte");
-        btnRefrescar.addActionListener(e -> cargarReporte());
-        panelInferior.add(btnRefrescar);
-        add(panelInferior, BorderLayout.SOUTH);
-    }
-
-    private void cargarReporte() {
-        modeloTabla.setRowCount(0); // Limpiar datos viejos
-        List<PagoPorCliente> datos = controller.listarPagosPorCliente();
         
-        if (datos.isEmpty()) {
-            // Por si la vista no devuelve filas o hay error de conexión
-            Object[] filaVacia = {"No hay datos de pagos registrados", 0.0};
-            modeloTabla.addRow(filaVacia);
-        } else {
-            for (PagoPorCliente p : datos) {
-                modeloTabla.addRow(new Object[]{p.getCliente(), p.getTotalPagado()});
+        tablaReporte = new JTable(modelo); // Inicializamos la tabla que definimos arriba
+        
+        JButton btnRefrescar = new JButton("Actualizar");
+        btnRefrescar.addActionListener(e -> {
+            modelo.setRowCount(0);
+            // Asegurate que en ReportesControlador exista el método listarPagosPorCliente()
+            List<PagoPorCliente> lista = controller.listarPagosPorCliente();
+            if (lista != null) {
+                for (PagoPorCliente p : lista) {
+                    modelo.addRow(new Object[]{p.getCliente(), p.getTotalPagado()});
+                }
             }
-        }
+        });
+
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.add(new JScrollPane(tablaReporte), BorderLayout.CENTER);
+        panel.add(btnRefrescar, BorderLayout.SOUTH);
+        return panel;
     }
 }

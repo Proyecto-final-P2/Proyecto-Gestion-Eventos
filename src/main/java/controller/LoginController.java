@@ -5,10 +5,6 @@ import repository.AdministradorDAO;
 import GUI.MenuPrincipal;
 import GUI.Login;
 import javax.swing.JOptionPane;
-import java.util.List;
-import model.Cliente;
-import repository.ClienteDAO;
-import java.sql.SQLException;
 
 // controlador del inicio de sesion
 public class LoginController {
@@ -53,17 +49,6 @@ public class LoginController {
             JOptionPane.showMessageDialog(vista,
                 "Error al conectar con la base de datos:\n" + ex.getMessage(),
                 "Error", JOptionPane.ERROR_MESSAGE);
-        }
-    }
-    public Cliente loginCliente(int dni) {
-        try {
-            ClienteDAO dao = new ClienteDAO();
-            Cliente c = dao.buscarPorDni(dni);
-            return c; // null si no existe
-        } catch (SQLException e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(vista, "Error de base de datos: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-            return null;
         }
     }
 }
