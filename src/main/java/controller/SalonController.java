@@ -34,7 +34,6 @@ public class SalonController {
     public boolean agregar(Salon s) {
         try {
             dao.insertar(s);
-            JOptionPane.showMessageDialog(null, "Salón agregado.");
             return true;
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(null, "Error al agregar salón: " + ex.getMessage());
@@ -46,7 +45,6 @@ public class SalonController {
     public boolean actualizar(Salon s) {
         try {
             dao.actualizar(s);
-            JOptionPane.showMessageDialog(null, "Salón actualizado.");
             return true;
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(null, "Error al actualizar salón: " + ex.getMessage());
@@ -54,14 +52,10 @@ public class SalonController {
         }
     }
 
-    // borra un salón, pero antes pregunta si estás seguro
+    // borra un salón
     public boolean eliminar(int id) {
-        int ok = JOptionPane.showConfirmDialog(null, "¿Eliminar este salón?", "Confirmar", JOptionPane.YES_NO_OPTION);
-        if (ok != JOptionPane.YES_OPTION) return false;
-        
         try {
             dao.eliminar(id);
-            JOptionPane.showMessageDialog(null, "Salón eliminado.");
             return true;
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(null, "Error al eliminar salón: " + ex.getMessage());

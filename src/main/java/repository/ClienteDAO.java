@@ -61,6 +61,20 @@ public class ClienteDAO {
         return lista;
     }
 
+    // busca clientes que contengan ese texto en su dni
+    public List<Cliente> buscarPorDni(String dni) throws SQLException {
+        List<Cliente> lista = new ArrayList<>();
+        String sql = "SELECT * FROM Cliente WHERE C_DNI LIKE ?";
+        try (Connection con = Util.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, "%" + dni + "%");
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) lista.add(mapear(rs));
+            }
+        }
+        return lista;
+    }
+
     // busca un cliente por su email exacto
     public Cliente buscarPorEmail(String email) throws SQLException {
         String sql = "SELECT * FROM Cliente WHERE C_Email = ?";
