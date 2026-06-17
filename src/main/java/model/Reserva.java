@@ -3,40 +3,72 @@ package model;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-// plantilla para crear reservas
+/**
+ * POJO que representa una Reserva.
+ */
 public class Reserva {
-    // atributos
-    private int       id;
-    private LocalDate fecha;
-    private LocalTime horaInicio;
-    private LocalTime horaFin;
-    private double    monto;
+    private int R_ID;
+    private LocalDate R_Fecha;
+    private LocalTime R_HoraInicio;
+    private LocalTime R_HoraFin;
+    private double R_Monto;
 
-    public Reserva() {} // crea una reserva en blanco
+    // Constructor vacío
+    public Reserva() {}
 
-    // crea reserva con todos los datos
-    public Reserva(int id, LocalDate fecha, LocalTime horaInicio, LocalTime horaFin, double monto) {
-        this.id         = id;
-        this.fecha      = fecha;
-        this.horaInicio = horaInicio;
-        this.horaFin    = horaFin;
-        this.monto      = monto;
+    // Constructor completo
+    public Reserva(int R_ID, LocalDate R_Fecha, LocalTime R_HoraInicio, LocalTime R_HoraFin, double R_Monto) {
+        this.R_ID = R_ID;
+        this.R_Fecha = R_Fecha;
+        this.R_HoraInicio = R_HoraInicio;
+        this.R_HoraFin = R_HoraFin;
+        this.R_Monto = R_Monto;
     }
 
     // Getters
-    public int       getId()         { return id; }
-    public LocalDate getFecha()      { return fecha; }
-    public LocalTime getHoraInicio() { return horaInicio; }
-    public LocalTime getHoraFin()    { return horaFin; }
-    public double    getMonto()      { return monto; }
+    public int getR_ID() {
+        return R_ID;
+    }
+
+    public LocalDate getR_Fecha() {
+        return R_Fecha;
+    }
+
+    public LocalTime getR_HoraInicio() {
+        return R_HoraInicio;
+    }
+
+    public LocalTime getR_HoraFin() {
+        return R_HoraFin;
+    }
+
+    public double getR_Monto() {
+        return R_Monto;
+    }
 
     // Setters
-    public void setId(int id)                { this.id = id; }
-    public void setFecha(LocalDate f)        { this.fecha = f; }
-    public void setHoraInicio(LocalTime h)   { this.horaInicio = h; }
-    public void setHoraFin(LocalTime h)      { this.horaFin = h; }
-    public void setMonto(double m)           { this.monto = m; }
+    public void setR_ID(int R_ID) {
+        this.R_ID = R_ID;
+    }
 
-    @Override //mostrar id y fecha de reserva
-    public String toString() { return "Reserva #" + id + " - " + fecha; }
+    public void setR_Fecha(LocalDate R_Fecha) {
+        this.R_Fecha = R_Fecha;
+    }
+
+    public void setR_HoraInicio(LocalTime R_HoraInicio) {
+        this.R_HoraInicio = R_HoraInicio;
+    }
+
+    public void setR_HoraFin(LocalTime R_HoraFin) {
+        this.R_HoraFin = R_HoraFin;
+    }
+
+    public void setR_Monto(double R_Monto) {
+        this.R_Monto = R_Monto;
+    }
+
+    @Override
+    public String toString() {
+        return "Reserva #" + R_ID + " [Fecha=" + R_Fecha + ", HoraInicio=" + R_HoraInicio + ", HoraFin=" + R_HoraFin + ", Monto=" + R_Monto + "]";
+    }
 }
