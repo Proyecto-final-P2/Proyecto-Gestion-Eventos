@@ -69,9 +69,6 @@ public class PagoController {
             return List.of();
         }
     }
-<<<<<<< Updated upstream
-=======
-
     public List<Pago> listarPorReserva(int reservaId) {
         try {
             return dao.listarPorReserva(reservaId);
@@ -80,14 +77,4 @@ public class PagoController {
             return List.of();
         }
     }
-
-    public List<Object[]> listarTodos() {
-        try {
-            return dao.listarTodos();
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(null, "Error al listar pagos: " + ex.getMessage());
-            return List.of();
-        }
-    }
->>>>>>> Stashed changes
 }

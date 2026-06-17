@@ -47,9 +47,6 @@ public class ReservaDAO {
         }
     }
 
-<<<<<<< Updated upstream
-    // convierte fila de la BD en objeto Reserva
-=======
     // Busca una reserva por ID
     public Reserva buscarPorId(int id) throws SQLException {
         String sql = "SELECT r.*, c.C_NombreApellido, s.SA_Nombre " +
@@ -67,9 +64,7 @@ public class ReservaDAO {
         return null;
     }
 
-
-    // Mapea una fila de ResultSet a un objeto Reserva completo
->>>>>>> Stashed changes
+    // convierte fila de la BD en objeto Reserva
     private Reserva mapear(ResultSet rs) throws SQLException {
         return new Reserva(
             rs.getInt("R_ID"),

@@ -1,21 +1,5 @@
 package GUI;
 
-<<<<<<< Updated upstream
-import javax.swing.*;
-import java.awt.*;
-
-/**
- * Panel de Pagos.
- * TODO: implementar siguiendo el mismo patrón que ClientesPanel.
- */
-public class PagosPanel extends JPanel {
-    public PagosPanel() {
-        setLayout(new BorderLayout());
-        JLabel lbl = new JLabel("Panel Pagos - En construcción", SwingConstants.CENTER);
-        lbl.setFont(new Font("Arial", Font.PLAIN, 16));
-        lbl.setForeground(Color.GRAY);
-        add(lbl, BorderLayout.CENTER);
-=======
 import controller.PagoController;
 import controller.ReservaController;
 import model.Pago;
@@ -110,7 +94,7 @@ public class PagosPanel extends JPanel {
         List<Reserva> reservasList = reservaController.listar();
         Map<Integer, Reserva> mapaReservas = new HashMap<>();
         for (Reserva r : reservasList) {
-            mapaReservas.put(r.getR_ID(), r);
+            mapaReservas.put(r.getId(), r);
         }
 
         List<Pago> pagos = controller.listar();
@@ -118,7 +102,7 @@ public class PagosPanel extends JPanel {
             Reserva r = mapaReservas.get(p.getReservaId());
             String descReserva = "Reserva #" + p.getReservaId();
             if (r != null) {
-                descReserva += " - " + r.getR_Fecha();
+                descReserva += " - " + r.getFecha();
             }
             modeloTabla.addRow(new Object[]{
                 p.getId(),
@@ -179,6 +163,5 @@ public class PagosPanel extends JPanel {
                 JOptionPane.showMessageDialog(this, "Registro eliminado exitosamente.");
             }
         }
->>>>>>> Stashed changes
     }
 }

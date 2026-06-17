@@ -12,14 +12,11 @@ public class GestorDeEventos {
         try {
             // que la app use el estilo visual de windows
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-<<<<<<< Updated upstream
-=======
 
             UIManager.put("OptionPane.yesButtonText", "Sí");
             UIManager.put("OptionPane.noButtonText", "No");
             UIManager.put("OptionPane.cancelButtonText", "Cancelar");
             UIManager.put("OptionPane.okButtonText", "Aceptar");
->>>>>>> Stashed changes
         } catch (Exception ignored) {
             // si algo falla se ignora y sigue
         }

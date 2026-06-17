@@ -106,8 +106,8 @@ public class FormularioPago extends JDialog {
         cbReservas.addItem(new ReservaComboItem(-1, "-- Seleccione una reserva --"));
         List<Reserva> lista = reservaController.listar();
         for (Reserva r : lista) {
-            String desc = "Reserva #" + r.getR_ID() + " - " + r.getR_Fecha();
-            cbReservas.addItem(new ReservaComboItem(r.getR_ID(), desc));
+            String desc = "Reserva #" + r.getId() + " - " + r.getFecha();
+            cbReservas.addItem(new ReservaComboItem(r.getId(), desc));
         }
     }
 
@@ -157,7 +157,7 @@ public class FormularioPago extends JDialog {
             JOptionPane.showMessageDialog(this, "No se pudo verificar la reserva.", "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
-        double totalReserva = res.getR_Monto();
+        double totalReserva = res.getMonto();
 
         double yaPagado = 0;
         List<Pago> pagosDeReserva = controller.listarPorReserva(resItem.getId());
