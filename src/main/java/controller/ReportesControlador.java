@@ -1,20 +1,20 @@
 package controller;
 
 import repository.Util;
+import repository.ReporteDAO;
+import model.PagoPorCliente;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Controlador para la pantalla de reportes de Eventos Confirmados.
- * Se encarga del acceso a datos consultando directamente la vista SQL VistasEventosConfirmados.
+ * Controlador para la pantalla de reportes.
+ * Integra las consultas de eventos originales con los nuevos reportes avanzados.
  */
 public class ReportesControlador {
 
-    /**
-     * Retorna todos los eventos confirmados.
-     * @return una lista de filas de eventos confirmados
-     */
+    // --- REPORTES ORIGINALES (Eventos y Salones) ---
+
     public List<Object[]> getEventosConfirmados() {
         List<Object[]> rows = new ArrayList<>();
         String sql = "SELECT * FROM VistasEventosConfirmados";
@@ -36,11 +36,6 @@ public class ReportesControlador {
         return rows;
     }
 
-    /**
-     * Retorna eventos confirmados filtrados por salón.
-     * @param salon nombre del salón a filtrar
-     * @return una lista de filas filtradas
-     */
     public List<Object[]> getEventosPorSalon(String salon) {
         List<Object[]> rows = new ArrayList<>();
         String sql = "SELECT * FROM VistasEventosConfirmados WHERE Salon = ?";
@@ -64,10 +59,6 @@ public class ReportesControlador {
         return rows;
     }
 
-    /**
-     * Retorna los nombres únicos de salones para cargar el JComboBox.
-     * @return lista de nombres de salones
-     */
     public List<String> getSalones() {
         List<String> salones = new ArrayList<>();
         String sql = "SELECT DISTINCT Salon FROM VistasEventosConfirmados ORDER BY Salon";
@@ -86,10 +77,6 @@ public class ReportesControlador {
         return salones;
     }
 
-    /**
-     * Retorna los nombres de columnas de la vista (para el header de la JTable).
-     * @return un arreglo con los nombres de las columnas
-     */
     public String[] getColumnNames() {
         String sql = "SELECT * FROM VistasEventosConfirmados WHERE 1=0";
         try (Connection con = Util.getConnection();
@@ -106,5 +93,31 @@ public class ReportesControlador {
             ex.printStackTrace();
             return new String[0];
         }
+    }
+
+    // --- REPORTES INTEGRADOS (Pagos y Reportes Avanzados) ---
+
+    public List<PagoPorCliente> listarPagosPorCliente() {
+        try {
+            return new ReporteDAO().obtenerPagosPorCliente();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
+
+    public List<Object[]> listarServiciosPorTipo() {
+        try { return new ReporteDAO().obtenerServiciosPorTipo(); }
+        catch (SQLException e) { e.printStackTrace(); return new ArrayList<>(); }
+    }
+
+    public List<Object[]> listarEventosCostosos() {
+        try { return new ReporteDAO().obtenerEventosCostosos(); }
+        catch (SQLException e) { e.printStackTrace(); return new ArrayList<>(); }
+    }
+
+    public List<Object[]> listarClientesTop() {
+        try { return new ReporteDAO().obtenerClientesTop(); }
+        catch (SQLException e) { e.printStackTrace(); return new ArrayList<>(); }
     }
 }
