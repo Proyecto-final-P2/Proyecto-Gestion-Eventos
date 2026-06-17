@@ -52,14 +52,14 @@ CREATE TABLE Administrador (
   A_Password VARCHAR(255) NOT NULL
 );
 
--- Tabla Servicios
+-- Tabla Servicios (CORREGIDA)
 CREATE TABLE Servicios (
-  SE_ID INT NOT NULL PRIMARY KEY,
+ SE_ID INT AUTO_INCREMENT PRIMARY KEY,
   SE_Tipo VARCHAR(45) NOT NULL,
   SE_Proveedor VARCHAR(45) NOT NULL,
   SE_Costo DECIMAL(10,2) NOT NULL,
   SE_Cantidad INT NOT NULL,
-  SE_Estado ENUM('confirmado', 'pendiente de confirmacion', 'cancelado') NOT NULL
+  SE_Estado ENUM('Disponible', 'No disponible') NOT NULL -- Acá cambiamos las opciones permitidas
 );
 
 -- Tabla Invitado
@@ -144,17 +144,17 @@ VALUES
 (2, 7500.00, 2),
 (3, 15000.00, 3);
 
--- Datos para la tabla Servicios
+-- Datos para la tabla Servicios (CORREGIDA)
 INSERT INTO Servicios (SE_ID, SE_Tipo, SE_Proveedor, SE_Costo, SE_Cantidad, SE_Estado)
 VALUES 
-(1, 'Catering', 'Catering Pro', 5000.00, 1, 'confirmado'),
-(2, 'Decoracion', 'Decorarte', 3000.00, 1, 'pendiente de confirmacion'),
-(3, 'DJ', 'Sonido Total', 4000.00, 1, 'cancelado'),
-(6, 'Sonido', 'Sonidos Perfectos', 2500.00, 1, 'confirmado'),
-(7, 'Decoracion', 'Estilos Creativos', 3500.00, 1, 'pendiente de confirmacion'),
-(8, 'Seguridad', 'Seguridad 24/7', 1500.00, 2, 'confirmado'),
-(9, 'Limpieza', 'Limpieza Total', 1000.00, 1, 'cancelado'),
-(10, 'Transporte', 'Transporte Express', 2000.00, 2, 'confirmado');
+(1, 'Catering', 'Catering Pro', 5000.00, 1, 'Disponible'),
+(2, 'Decoración', 'Decorarte', 3000.00, 1, 'Disponible'),
+(3, 'DJ', 'Sonido Total', 4000.00, 1, 'No disponible'),
+(6, 'Sonido', 'Sonidos Perfectos', 2500.00, 1, 'Disponible'),
+(7, 'Decoración', 'Estilos Creativos', 3500.00, 1, 'Disponible'),
+(8, 'Seguridad', 'Seguridad 24/7', 1500.00, 2, 'Disponible'),
+(9, 'Limpieza', 'Limpieza Total', 1000.00, 1, 'No disponible'),
+(10, 'Transporte', 'Transporte Express', 2000.00, 2, 'Disponible');
 
 -- Datos para la tabla Invitado
 INSERT INTO Invitado (IN_ID, IN_DNI, IN_NombreApellido, IN_Email, IN_Telefono, IN_Asistencia, IN_PreferenciaMenu)
@@ -183,9 +183,9 @@ VALUES
 
 INSERT INTO Contratados (Evento_E_ID, Servicios_SE_ID, CON_Precio)
 VALUES 
-(1, 1, 5000.00),  -- Evento 1 con Servicio 1
-(2, 2, 3000.00),  -- Evento 2 con Servicio 2
-(3, 3, 4000.00),  -- Evento 3 con Servicio 3
+(1, 1, 5000.00),  
+(2, 2, 3000.00),  
+(3, 3, 4000.00),  
 (6, 6, 2500.00),
 (7, 7, 3500.00),
 (8, 8, 1500.00),

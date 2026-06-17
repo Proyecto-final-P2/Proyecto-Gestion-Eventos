@@ -45,12 +45,12 @@ CREATE TABLE Pago (
 
 -- Tabla Servicios
 CREATE TABLE Servicios (
-  SE_ID INT NOT NULL PRIMARY KEY,
+  SE_ID INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   SE_Tipo VARCHAR(45) NOT NULL,
   SE_Proveedor VARCHAR(45) NOT NULL,
   SE_Costo DECIMAL(10,2) NOT NULL,
   SE_Cantidad INT NOT NULL,
-  SE_Estado ENUM('confirmado', 'pendiente de confirmacion', 'cancelado') NOT NULL
+  SE_Estado ENUM('Disponible', 'No disponible') NOT NULL DEFAULT 'Disponible'
 );
 
 -- Tabla Invitado
@@ -133,14 +133,14 @@ VALUES
 -- Datos para la tabla Servicios
 INSERT INTO Servicios (SE_ID, SE_Tipo, SE_Proveedor, SE_Costo, SE_Cantidad, SE_Estado)
 VALUES 
-(1, 'Catering', 'Catering Pro', 5000.00, 1, 'confirmado'),
-(2, 'Decoración', 'Decorarte', 3000.00, 1, 'pendiente de confirmacion'),
-(3, 'DJ', 'Sonido Total', 4000.00, 1, 'cancelado'),
-(6, 'Sonido', 'Sonidos Perfectos', 2500.00, 1, 'confirmado'),
-(7, 'Decoración', 'Estilos Creativos', 3500.00, 1, 'pendiente de confirmacion'),
-(8, 'Seguridad', 'Seguridad 24/7', 1500.00, 2, 'confirmado'),
-(9, 'Limpieza', 'Limpieza Total', 1000.00, 1, 'cancelado'),
-(10, 'Transporte', 'Transporte Express', 2000.00, 2, 'confirmado');
+(1, 'Catering', 'Catering Pro', 5000.00, 1, 'Disponible'),
+(2, 'Decoración', 'Decorarte', 3000.00, 1, 'Disponible'),
+(3, 'DJ', 'Sonido Total', 4000.00, 1, 'No disponible'),
+(6, 'Sonido', 'Sonidos Perfectos', 2500.00, 1, 'Disponible'),
+(7, 'Decoración', 'Estilos Creativos', 3500.00, 1, 'Disponible'),
+(8, 'Seguridad', 'Seguridad 24/7', 1500.00, 2, 'Disponible'),
+(9, 'Limpieza', 'Limpieza Total', 1000.00, 1, 'No disponible'),
+(10, 'Transporte', 'Transporte Express', 2000.00, 2, 'Disponible');
 
 -- Datos para la tabla Invitado
 INSERT INTO Invitado (IN_ID, IN_DNI, IN_NombreApellido, IN_Email, IN_Telefono, IN_Asistencia, IN_PreferenciaMenu)
