@@ -19,10 +19,24 @@ public class AdministradorController {
         catch (Exception ex) { JOptionPane.showMessageDialog(null, "Error: " + ex.getMessage()); return List.of(); }
     }
 
+    public boolean agregar(Administrador a) {
+        try {
+            if (dao.buscarPorEmail(a.getEmail()) != null) {
+                JOptionPane.showMessageDialog(null, "Error: El Email ya está registrado.", "Error", JOptionPane.ERROR_MESSAGE);
+                return false;
+            }
+            dao.insertar(a);
+            return true;
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(null, "Error en la base de datos: " + ex.getMessage());
+            return false;
+        }
+    }
+
     public String registrar(Administrador a) {
         try {
             if (dao.buscarPorEmail(a.getEmail()) != null) {
-                return "Error: El Email ya está registrado.";
+                return "El Email ya está registrado.";
             }
             dao.insertar(a);
             return "OK";
@@ -32,15 +46,12 @@ public class AdministradorController {
     }
 
     public boolean actualizar(Administrador a) {
-        try { dao.actualizar(a); JOptionPane.showMessageDialog(null, "Administrador actualizado."); return true; }
+        try { dao.actualizar(a); return true; }
         catch (Exception ex) { JOptionPane.showMessageDialog(null, "Error: " + ex.getMessage()); return false; }
     }
 
     public boolean eliminar(int id) {
-        int ok = JOptionPane.showConfirmDialog(null, "¿Eliminar este administrador?", "Confirmar", JOptionPane.YES_NO_OPTION);
-        if (ok != JOptionPane.YES_OPTION) return false;
-        
-        try { dao.eliminar(id); JOptionPane.showMessageDialog(null, "Administrador eliminado."); return true; }
+        try { dao.eliminar(id); return true; }
         catch (Exception ex) { JOptionPane.showMessageDialog(null, "Error: " + ex.getMessage()); return false; }
     }
 }
