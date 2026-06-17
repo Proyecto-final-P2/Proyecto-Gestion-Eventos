@@ -5,14 +5,14 @@
 ---
 
 ## 👥 Integrantes
-| Nombre |
-|--------|
-| (completar) | 
-| (completar) | 
-| (completar) | 
-| (completar) | 
-| (completar) | 
-| (completar) | 
+| Nombres         |
+|-----------------|
+| Martina Moneo   | 
+| Lisandro Rimada | 
+| Luka Mercado    | 
+| Nico García     | 
+| Alvaro Silvera  | 
+| Jonathan Oliva  | 
 ---
 
 ## 🏗️ Arquitectura
