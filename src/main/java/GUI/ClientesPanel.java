@@ -147,7 +147,14 @@ public class ClientesPanel extends JPanel {
             JOptionPane.showMessageDialog(this, "Seleccioná un cliente de la tabla.", "Aviso", JOptionPane.WARNING_MESSAGE);
             return;
         }
-        int id = (int) modeloTabla.getValueAt(fila, 0);
-        if (controller.eliminar(id)) cargarTabla();
+        
+        int confirm = JOptionPane.showConfirmDialog(this, "¿Está seguro que desea eliminar el registro seleccionado?", "Confirmar Eliminación", JOptionPane.YES_NO_OPTION);
+        if (confirm == JOptionPane.YES_OPTION) {
+            int id = (int) modeloTabla.getValueAt(fila, 0);
+            if (controller.eliminar(id)) {
+                cargarTabla();
+                JOptionPane.showMessageDialog(this, "Registro eliminado exitosamente.");
+            }
+        }
     }
 }

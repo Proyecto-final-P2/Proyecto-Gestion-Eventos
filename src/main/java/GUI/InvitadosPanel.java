@@ -193,12 +193,14 @@ public class InvitadosPanel extends JPanel {
             JOptionPane.showMessageDialog(this, "Seleccioná un invitado de la tabla.", "Aviso", JOptionPane.WARNING_MESSAGE);
             return;
         }
-        int id = (int) modelo.getValueAt(fila, 0);
-        int confirmar = JOptionPane.showConfirmDialog(this,
-            "¿Eliminár este invitado?", "Confirmar eliminación", JOptionPane.YES_NO_OPTION);
-        if (confirmar == JOptionPane.YES_OPTION) {
-            controller.eliminar(id);
-            cargarTabla(getEventoIdSeleccionado());
+        
+        int confirm = JOptionPane.showConfirmDialog(this, "¿Está seguro que desea eliminar el registro seleccionado?", "Confirmar Eliminación", JOptionPane.YES_NO_OPTION);
+        if (confirm == JOptionPane.YES_OPTION) {
+            int id = (int) modelo.getValueAt(fila, 0);
+            if (controller.eliminar(id)) {
+                cargarTabla(getEventoIdSeleccionado());
+                JOptionPane.showMessageDialog(this, "Registro eliminado exitosamente.");
+            }
         }
     }
 

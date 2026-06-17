@@ -153,13 +153,17 @@ public class FormularioInvitado extends JDialog {
         if (invitadoExistente == null) {
             // ALTA
             inv.setEventoId(eventoId);
-            controller.insertar(inv);
+            if (controller.agregar(inv)) {
+                JOptionPane.showMessageDialog(this, "Invitado guardado exitosamente.");
+                dispose();
+            }
         } else {
             // EDICIÓN: preservar el ID original
             inv.setId(invitadoExistente.getId());
-            controller.actualizar(inv);
+            if (controller.actualizar(inv)) {
+                JOptionPane.showMessageDialog(this, "Invitado actualizado exitosamente.");
+                dispose();
+            }
         }
-
-        dispose();
     }
 }

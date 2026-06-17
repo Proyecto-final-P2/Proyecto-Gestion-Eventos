@@ -9,11 +9,13 @@ public class InvitadoController {
     private final InvitadoDAO dao = new InvitadoDAO();
 
     // inserta un nuevo invitado y lo vincula al evento
-    public void insertar(Invitado i) {
+    public boolean agregar(Invitado i) {
         try {
             dao.insertar(i);
+            return true;
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(null, "Error al insertar invitado: " + ex.getMessage());
+            JOptionPane.showMessageDialog(null, "Error al agregar invitado: " + ex.getMessage());
+            return false;
         }
     }
 
@@ -58,20 +60,24 @@ public class InvitadoController {
     }
 
     // actualiza los datos de un invitado existente
-    public void actualizar(Invitado i) {
+    public boolean actualizar(Invitado i) {
         try {
             dao.actualizar(i);
+            return true;
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(null, "Error al actualizar invitado: " + ex.getMessage());
+            return false;
         }
     }
 
     // elimina un invitado por su ID (borra también de Asiste en el DAO)
-    public void eliminar(int id) {
+    public boolean eliminar(int id) {
         try {
             dao.eliminar(id);
+            return true;
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(null, "Error al eliminar invitado: " + ex.getMessage());
+            return false;
         }
     }
 }

@@ -116,10 +116,16 @@ public class FormularioCliente extends JDialog {
         c.setTelefono(tel);
 
         if (clienteExistente == null) {
-            if (controller.agregar(c)) dispose();
+            if (controller.agregar(c)) {
+                JOptionPane.showMessageDialog(this, "Cliente guardado exitosamente.");
+                dispose();
+            }
         } else {
             c.setId(clienteExistente.getId());
-            if (controller.actualizar(c)) dispose();
+            if (controller.actualizar(c)) {
+                JOptionPane.showMessageDialog(this, "Cliente actualizado exitosamente.");
+                dispose();
+            }
         }
     }
 }

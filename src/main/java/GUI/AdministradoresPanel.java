@@ -15,10 +15,8 @@ public class AdministradoresPanel extends JPanel {
     private DefaultTableModel modeloTabla;
     private JTextField txtBuscar;
 
-    // Campos del formulario
-    private JTextField txtNombre, txtEmail;
-    private JPasswordField txtPassword;
-    private JButton btnAgregar, btnEditar, btnEliminar, btnLimpiar;
+    // Botones de acción
+    private JButton btnAgregar, btnEditar, btnEliminar;
 
     public AdministradoresPanel() {
         setLayout(new BorderLayout(10, 10));
@@ -40,9 +38,6 @@ public class AdministradoresPanel extends JPanel {
         };
         tabla = new JTable(modeloTabla);
         tabla.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        tabla.getSelectionModel().addListSelectionListener(e -> {
-            if (!e.getValueIsAdjusting()) cargarFormularioDesdeTabla();
-        });
 
         JScrollPane scroll = new JScrollPane(tabla);
 
@@ -65,54 +60,25 @@ public class AdministradoresPanel extends JPanel {
         centro.add(scroll, BorderLayout.CENTER);
         add(centro, BorderLayout.CENTER);
 
-        // --- FORMULARIO (este) ---
-        JPanel formulario = new JPanel(new GridBagLayout());
-        formulario.setBorder(BorderFactory.createTitledBorder("Datos del Administrador"));
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.weightx = 1.0;
-        gbc.insets = new Insets(8, 5, 8, 5);
-        gbc.gridx = 0;
-
-        txtNombre   = new JTextField();
-        txtEmail    = new JTextField();
-        txtPassword = new JPasswordField();
-
-        String[] labels = {"Nombre y Apellido:", "Email:", "Contraseña:"};
-        JComponent[] fields = {txtNombre, txtEmail, txtPassword};
-        for (int i = 0; i < labels.length; i++) {
-            fields[i].setPreferredSize(new Dimension(250, 40));
-            gbc.gridy = i * 2;
-            formulario.add(new JLabel(labels[i]), gbc);
-            gbc.gridy = i * 2 + 1;
-            formulario.add(fields[i], gbc);
-        }
-
-        // Botones
+        // --- BOTONES (sur) ---
+        JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.LEFT));
         btnAgregar  = new JButton("Agregar");
-        btnEditar   = new JButton("Editar");
+        btnEditar   = new JButton("Modificar");
         btnEliminar = new JButton("Eliminar");
-        btnLimpiar  = new JButton("Limpiar");
 
         btnAgregar.setBackground(new Color(70, 160, 70));
         btnEliminar.setBackground(new Color(200, 60, 60));
 
-        gbc.gridy = 6; formulario.add(btnAgregar, gbc);
-        gbc.gridy = 7; formulario.add(btnEditar, gbc);
-        gbc.gridy = 8; formulario.add(btnEliminar, gbc);
-        gbc.gridy = 9; formulario.add(btnLimpiar, gbc);
+        panelBotones.add(btnAgregar);
+        panelBotones.add(btnEditar);
+        panelBotones.add(btnEliminar);
 
+        add(panelBotones, BorderLayout.SOUTH);
+
+        // Listeners
         btnAgregar.addActionListener(e  -> agregar());
         btnEditar.addActionListener(e   -> editar());
         btnEliminar.addActionListener(e -> eliminar());
-        btnLimpiar.addActionListener(e  -> limpiarFormulario());
-
-        JScrollPane scrollForm = new JScrollPane(formulario);
-        scrollForm.setBorder(null);
-        scrollForm.setPreferredSize(new Dimension(280, 0));
-        scrollForm.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        scrollForm.getVerticalScrollBar().setUnitIncrement(16);
-        add(scrollForm, BorderLayout.EAST);
     }
 
     private void cargarTabla() {
@@ -137,78 +103,49 @@ public class AdministradoresPanel extends JPanel {
         }
     }
 
-    private void cargarFormularioDesdeTabla() {
-        int fila = tabla.getSelectedRow();
-        if (fila < 0) return;
-        txtNombre.setText(modeloTabla.getValueAt(fila, 1).toString());
-        txtEmail.setText(modeloTabla.getValueAt(fila, 2).toString());
-        // Al seleccionar de la tabla no cargamos la contraseña por seguridad,
-        // pero la limpiamos por si quiere sobreescribirla
-        txtPassword.setText("");
-    }
-
     private void agregar() {
-        if (!validarCampos(true)) return;
-        Administrador a = new Administrador();
-        a.setNombreApellido(txtNombre.getText().trim());
-        a.setEmail(txtEmail.getText().trim());
-        a.setPassword(new String(txtPassword.getPassword()).trim());
-        String res = controller.registrar(a);
-        if ("OK".equals(res)) { 
-            JOptionPane.showMessageDialog(this, "Administrador agregado con éxito.");
-            cargarTabla(); limpiarFormulario(); 
-        } else {
-            JOptionPane.showMessageDialog(this, res, "Error", JOptionPane.ERROR_MESSAGE);
-        }
+        Window parentWindow = SwingUtilities.getWindowAncestor(this);
+        JFrame parentFrame = (parentWindow instanceof JFrame) ? (JFrame) parentWindow : null;
+        FormularioAdministrador dialog = new FormularioAdministrador(parentFrame, controller);
+        dialog.setVisible(true);
+        cargarTabla();
     }
 
     private void editar() {
         int fila = tabla.getSelectedRow();
-        if (fila < 0) { JOptionPane.showMessageDialog(this, "Seleccioná un administrador de la tabla."); return; }
-        if (!validarCampos(false)) return;
-        Administrador a = new Administrador();
-        a.setId((int) modeloTabla.getValueAt(fila, 0));
-        a.setNombreApellido(txtNombre.getText().trim());
-        a.setEmail(txtEmail.getText().trim());
-        
-        String nuevaClave = new String(txtPassword.getPassword()).trim();
-        if (nuevaClave.isEmpty()) {
-            // Si la clave está vacía, buscamos la actual para no pisarla
-            List<Administrador> admins = controller.listar();
-            for (Administrador admin : admins) {
-                if (admin.getId() == a.getId()) {
-                    a.setPassword(admin.getPassword());
-                    break;
-                }
-            }
-        } else {
-            a.setPassword(nuevaClave);
+        if (fila < 0) { 
+            JOptionPane.showMessageDialog(this, "Seleccioná un administrador de la tabla.", "Atención", JOptionPane.WARNING_MESSAGE); 
+            return; 
         }
+        int id = (int) modeloTabla.getValueAt(fila, 0);
+        String nombre = (String) modeloTabla.getValueAt(fila, 1);
+        String email = (String) modeloTabla.getValueAt(fila, 2);
         
-        if (controller.actualizar(a)) { cargarTabla(); limpiarFormulario(); }
+        Administrador admin = new Administrador();
+        admin.setId(id);
+        admin.setNombreApellido(nombre);
+        admin.setEmail(email);
+        
+        Window parentWindow = SwingUtilities.getWindowAncestor(this);
+        JFrame parentFrame = (parentWindow instanceof JFrame) ? (JFrame) parentWindow : null;
+        FormularioAdministrador dialog = new FormularioAdministrador(parentFrame, controller, admin);
+        dialog.setVisible(true);
+        cargarTabla();
     }
 
     private void eliminar() {
         int fila = tabla.getSelectedRow();
-        if (fila < 0) { JOptionPane.showMessageDialog(this, "Seleccioná un administrador de la tabla."); return; }
-        int id = (int) modeloTabla.getValueAt(fila, 0);
-        if (controller.eliminar(id)) { cargarTabla(); limpiarFormulario(); }
-    }
-
-    private void limpiarFormulario() {
-        txtNombre.setText(""); txtEmail.setText(""); txtPassword.setText("");
-        tabla.clearSelection();
-    }
-
-    private boolean validarCampos(boolean validacionCompleta) {
-        if (txtNombre.getText().trim().isEmpty() || txtEmail.getText().trim().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "El nombre y el email son obligatorios.");
-            return false;
+        if (fila < 0) { JOptionPane.showMessageDialog(this, "Seleccioná un administrador de la tabla.", "Atención", JOptionPane.WARNING_MESSAGE); return; }
+        
+        int confirm = JOptionPane.showConfirmDialog(this, "¿Está seguro que desea eliminar el registro seleccionado?", "Confirmar Eliminación", JOptionPane.YES_NO_OPTION);
+        if (confirm == JOptionPane.YES_OPTION) {
+            int id = (int) modeloTabla.getValueAt(fila, 0);
+            if (controller.eliminar(id)) { 
+                cargarTabla(); 
+                JOptionPane.showMessageDialog(this, "Registro eliminado exitosamente.");
+            } else {
+                JOptionPane.showMessageDialog(this, "Error al eliminar el administrador.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
         }
-        if (validacionCompleta && new String(txtPassword.getPassword()).trim().isEmpty()) {
-            JOptionPane.showMessageDialog(this, "La contraseña es obligatoria para nuevos usuarios.");
-            return false;
-        }
-        return true;
     }
 }

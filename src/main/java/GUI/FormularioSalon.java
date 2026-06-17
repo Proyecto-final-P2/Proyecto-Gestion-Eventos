@@ -139,10 +139,16 @@ public class FormularioSalon extends JDialog {
         s.setCosto(costo);
 
         if (salonExistente == null) {
-            if (controller.agregar(s)) dispose();
+            if (controller.agregar(s)) {
+                JOptionPane.showMessageDialog(this, "Salón guardado exitosamente.");
+                dispose();
+            }
         } else {
             s.setId(salonExistente.getId());
-            if (controller.actualizar(s)) dispose();
+            if (controller.actualizar(s)) {
+                JOptionPane.showMessageDialog(this, "Salón actualizado exitosamente.");
+                dispose();
+            }
         }
     }
 }
