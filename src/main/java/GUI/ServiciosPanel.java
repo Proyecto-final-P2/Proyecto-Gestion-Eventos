@@ -2,176 +2,159 @@ package GUI;
 
 import controller.ServicioController;
 import model.Servicio;
-
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.List;
 
+/**
+ * Panel de gestión de Servicios.
+ * Sigue la estructura visual exacta de ClientesPanel.java.
+ */
 public class ServiciosPanel extends JPanel {
 
-    private ServicioController controller;
-    private JTable tablaServicios;
+    private final ServicioController controller = new ServicioController();
+
+    private JTable tabla;
     private DefaultTableModel modeloTabla;
-    
-    // Variable interna para guardar el ID cuando editamos (sin mostrarlo en pantalla)
-    private int idServicioSeleccionado = -1;
+    private JTextField txtBuscar;
 
     public ServiciosPanel() {
-        controller = new ServicioController();
         setLayout(new BorderLayout(10, 10));
         setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
-
-        inicializarTabla();
-        inicializarBotones();
+        initComponents();
         cargarTabla();
     }
 
-    private void inicializarTabla() {
-        modeloTabla = new DefaultTableModel(new String[]{"ID", "Tipo", "Proveedor", "Costo", "Cantidad", "Estado"}, 0) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false; 
-            }
+    private void initComponents() {
+        // --- TÍTULO ---
+        JLabel titulo = new JLabel("Gestión de Servicios");
+        titulo.setFont(new Font("Arial", Font.BOLD, 18));
+        add(titulo, BorderLayout.NORTH);
+
+        // --- TABLA (centro) ---
+        String[] columnas = {"ID", "Tipo", "Proveedor", "Costo", "Cantidad", "Estado"};
+        modeloTabla = new DefaultTableModel(columnas, 0) {
+            @Override public boolean isCellEditable(int r, int c) { return false; }
         };
-        tablaServicios = new JTable(modeloTabla);
-        
-        // Ocultamos la columna ID de la vista de la tabla, pero mantenemos los datos ocultos
-        tablaServicios.getColumnModel().getColumn(0).setMinWidth(0);
-        tablaServicios.getColumnModel().getColumn(0).setMaxWidth(0);
-        tablaServicios.getColumnModel().getColumn(0).setWidth(0);
+        tabla = new JTable(modeloTabla);
+        tabla.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
-        JScrollPane scrollPane = new JScrollPane(tablaServicios);
-        add(scrollPane, BorderLayout.CENTER);
-    }
+        // Ocultar columna ID visualmente
+        tabla.getColumnModel().getColumn(0).setMinWidth(0);
+        tabla.getColumnModel().getColumn(0).setMaxWidth(0);
+        tabla.getColumnModel().getColumn(0).setWidth(0);
 
-    private void inicializarBotones() {
-        JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
-        
-        JButton btnNuevo = new JButton("Nuevo Servicio");
-        JButton btnEditar = new JButton("Editar Servicio");
-        JButton btnEliminar = new JButton("Eliminar");
+        JScrollPane scroll = new JScrollPane(tabla);
 
-        btnNuevo.addActionListener(e -> mostrarVentanaABM(false));
-        
-        btnEditar.addActionListener(e -> {
-            int fila = tablaServicios.getSelectedRow();
-            if (fila == -1) {
-                JOptionPane.showMessageDialog(this, "Seleccione un servicio de la tabla para editar.", "Aviso", JOptionPane.WARNING_MESSAGE);
-                return;
-            }
-            // Guardamos el ID internamente
-            idServicioSeleccionado = Integer.parseInt(modeloTabla.getValueAt(fila, 0).toString());
-            mostrarVentanaABM(true);
-        });
+        // Barra de búsqueda sobre la tabla
+        JPanel panelBuscar = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        txtBuscar = new JTextField(20);
+        JButton btnBuscar = new JButton("Buscar");
+        JButton btnMostrarTodos = new JButton("Mostrar todos");
+        panelBuscar.add(new JLabel("Buscar por Proveedor:"));
+        panelBuscar.add(txtBuscar);
+        panelBuscar.add(btnBuscar);
+        panelBuscar.add(btnMostrarTodos);
 
-        btnEliminar.addActionListener(e -> eliminarServicio());
+        btnBuscar.addActionListener(e -> buscar());
+        btnMostrarTodos.addActionListener(e -> cargarTabla());
+        txtBuscar.addActionListener(e -> buscar());
 
-        panelBotones.add(btnNuevo);
-        panelBotones.add(btnEditar);
+        JPanel centro = new JPanel(new BorderLayout(5, 5));
+        centro.add(panelBuscar, BorderLayout.NORTH);
+        centro.add(scroll, BorderLayout.CENTER);
+        add(centro, BorderLayout.CENTER);
+
+        // --- BOTONES (sur) ---
+        JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.LEFT));
+
+        JButton btnAgregar   = new JButton("Agregar");
+        JButton btnModificar = new JButton("Modificar");
+        JButton btnEliminar  = new JButton("Eliminar");
+
+        btnAgregar.setBackground(new Color(70, 160, 70));
+        btnEliminar.setBackground(new Color(200, 60, 60));
+
+        panelBotones.add(btnAgregar);
+        panelBotones.add(btnModificar);
         panelBotones.add(btnEliminar);
         add(panelBotones, BorderLayout.SOUTH);
+
+        btnAgregar.addActionListener(e   -> abrirFormularioAlta());
+        btnModificar.addActionListener(e -> abrirFormularioEdicion());
+        btnEliminar.addActionListener(e  -> eliminarSeleccionado());
     }
 
-    // --- MODO VENTANA (JDialog) ---
-    private void mostrarVentanaABM(boolean esEdicion) {
-        Window parentWindow = SwingUtilities.getWindowAncestor(this);
-        JDialog dialog = new JDialog(parentWindow, esEdicion ? "Editar Servicio" : "Nuevo Servicio", Dialog.ModalityType.APPLICATION_MODAL);
-        dialog.setSize(350, 300);
-        dialog.setLocationRelativeTo(this);
-        dialog.setLayout(new BorderLayout());
-
-        JPanel panelForm = new JPanel(new GridLayout(5, 2, 10, 15));
-        panelForm.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
-
-        JComboBox<String> cmbTipo = new JComboBox<>(new String[]{"Catering", "DJ", "Decoración", "Sonido", "Iluminación", "Fotografía", "Seguridad", "Otro"});
-        JTextField txtProveedor = new JTextField();
-        JTextField txtCosto = new JTextField();
-        JTextField txtCantidad = new JTextField();
-        JComboBox<String> cmbEstado = new JComboBox<>(new String[]{"Disponible", "No disponible"});
-
-        // Si es edición, cargamos los datos de la fila seleccionada en la ventanita
-        if (esEdicion) {
-            int fila = tablaServicios.getSelectedRow();
-            cmbTipo.setSelectedItem(modeloTabla.getValueAt(fila, 1).toString());
-            txtProveedor.setText(modeloTabla.getValueAt(fila, 2).toString());
-            txtCosto.setText(modeloTabla.getValueAt(fila, 3).toString());
-            txtCantidad.setText(modeloTabla.getValueAt(fila, 4).toString());
-            cmbEstado.setSelectedItem(modeloTabla.getValueAt(fila, 5).toString());
-        }
-
-        // NO agregamos el campo ID a la vista
-        panelForm.add(new JLabel("Tipo:")); panelForm.add(cmbTipo);
-        panelForm.add(new JLabel("Proveedor:")); panelForm.add(txtProveedor);
-        panelForm.add(new JLabel("Costo ($):")); panelForm.add(txtCosto);
-        panelForm.add(new JLabel("Cantidad:")); panelForm.add(txtCantidad);
-        panelForm.add(new JLabel("Estado:")); panelForm.add(cmbEstado);
-
-        JButton btnGuardar = new JButton("Guardar");
-        btnGuardar.addActionListener(e -> {
-            if (txtProveedor.getText().trim().isEmpty() || txtCosto.getText().trim().isEmpty() || txtCantidad.getText().trim().isEmpty()) {
-                JOptionPane.showMessageDialog(dialog, "Complete todos los campos.", "Error", JOptionPane.WARNING_MESSAGE);
-                return;
-            }
-
-            try {
-                double costo = Double.parseDouble(txtCosto.getText().trim());
-                int cantidad = Integer.parseInt(txtCantidad.getText().trim());
-
-                if (costo < 0 || cantidad < 0) {
-                    JOptionPane.showMessageDialog(dialog, "El costo y la cantidad no pueden ser negativos.", "Error", JOptionPane.ERROR_MESSAGE);
-                    return;
-                }
-
-                // Si es nuevo, mandamos ID 0. Si es edición, mandamos el ID guardado.
-                int idGuardar = esEdicion ? idServicioSeleccionado : 0;
-                Servicio s = new Servicio(idGuardar, (String) cmbTipo.getSelectedItem(), txtProveedor.getText().trim(), costo, cantidad, (String) cmbEstado.getSelectedItem());
-
-                boolean exito = esEdicion ? controller.actualizarServicio(s) : controller.guardarServicio(s);
-
-                if (exito) {
-                    JOptionPane.showMessageDialog(dialog, "Operación exitosa.");
-                    dialog.dispose(); // Cierra la ventanita
-                    cargarTabla(); // Refresca la tabla
-                } else {
-                    JOptionPane.showMessageDialog(dialog, "Error en la base de datos.");
-                }
-            } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(dialog, "Costo y Cantidad deben ser números válidos.", "Error", JOptionPane.WARNING_MESSAGE);
-            }
-        });
-
-        JPanel panelSur = new JPanel();
-        panelSur.add(btnGuardar);
-
-        dialog.add(panelForm, BorderLayout.CENTER);
-        dialog.add(panelSur, BorderLayout.SOUTH);
-        dialog.setVisible(true);
-    }
-
+    // carga todos los servicios de la bd a la tabla visual
     private void cargarTabla() {
-        modeloTabla.setRowCount(0); 
-        List<Servicio> lista = controller.listarServicios();
-        for (Servicio s : lista) {
-            modeloTabla.addRow(new Object[]{s.getId(), s.getTipo(), s.getProveedor(), s.getCosto(), s.getCantidad(), s.getEstado()});
+        modeloTabla.setRowCount(0);
+        List<Servicio> servicios = controller.listarServicios();
+        for (Servicio s : servicios) {
+            modeloTabla.addRow(new Object[]{
+                s.getId(), s.getTipo(), s.getProveedor(), s.getCosto(), s.getCantidad(), s.getEstado()
+            });
         }
     }
 
-    private void eliminarServicio() {
-        int fila = tablaServicios.getSelectedRow();
-        if (fila == -1) {
-            JOptionPane.showMessageDialog(this, "Seleccione un servicio para eliminar.", "Aviso", JOptionPane.WARNING_MESSAGE);
+    // filtra la tabla usando el texto del buscador
+    private void buscar() {
+        String texto = txtBuscar.getText().trim();
+        if (texto.isEmpty()) { cargarTabla(); return; }
+        modeloTabla.setRowCount(0);
+        List<Servicio> resultados = controller.buscar(texto);
+        for (Servicio s : resultados) {
+            modeloTabla.addRow(new Object[]{
+                s.getId(), s.getTipo(), s.getProveedor(), s.getCosto(), s.getCantidad(), s.getEstado()
+            });
+        }
+    }
+
+    // abre el formulario vacío para agregar un servicio nuevo
+    private void abrirFormularioAlta() {
+        Window ventana = SwingUtilities.getWindowAncestor(this);
+        JFrame frame = ventana instanceof JFrame ? (JFrame) ventana : null;
+        FormularioServicio form = new FormularioServicio(frame, controller);
+        form.setVisible(true);
+        cargarTabla();
+    }
+
+    // abre el formulario pre-cargado con la fila seleccionada para editar
+    private void abrirFormularioEdicion() {
+        int fila = tabla.getSelectedRow();
+        if (fila < 0) {
+            JOptionPane.showMessageDialog(this, "Seleccioná un servicio de la tabla.", "Aviso", JOptionPane.WARNING_MESSAGE);
             return;
         }
+        Servicio s = new Servicio();
+        s.setId((int) modeloTabla.getValueAt(fila, 0));
+        s.setTipo(modeloTabla.getValueAt(fila, 1).toString());
+        s.setProveedor(modeloTabla.getValueAt(fila, 2).toString());
+        s.setCosto(Double.parseDouble(modeloTabla.getValueAt(fila, 3).toString()));
+        s.setCantidad(Integer.parseInt(modeloTabla.getValueAt(fila, 4).toString()));
+        s.setEstado(modeloTabla.getValueAt(fila, 5).toString());
 
-        int confirmacion = JOptionPane.showConfirmDialog(this, "¿Seguro que desea eliminar este servicio?", "Confirmar Eliminación", JOptionPane.YES_NO_OPTION);
-        if (confirmacion == JOptionPane.YES_OPTION) {
-            int idEliminar = Integer.parseInt(modeloTabla.getValueAt(fila, 0).toString());
-            if (controller.eliminarServicio(idEliminar)) {
-                JOptionPane.showMessageDialog(this, "Servicio eliminado.");
+        Window ventana = SwingUtilities.getWindowAncestor(this);
+        JFrame frame = ventana instanceof JFrame ? (JFrame) ventana : null;
+        FormularioServicio form = new FormularioServicio(frame, controller, s);
+        form.setVisible(true);
+        cargarTabla();
+    }
+
+    // elimina el servicio seleccionado previa confirmación
+    private void eliminarSeleccionado() {
+        int fila = tabla.getSelectedRow();
+        if (fila < 0) {
+            JOptionPane.showMessageDialog(this, "Seleccioná un servicio de la tabla.", "Aviso", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        
+        int confirm = JOptionPane.showConfirmDialog(this, "¿Está seguro que desea eliminar el registro seleccionado?", "Confirmar Eliminación", JOptionPane.YES_NO_OPTION);
+        if (confirm == JOptionPane.YES_OPTION) {
+            int id = (int) modeloTabla.getValueAt(fila, 0);
+            if (controller.eliminarServicio(id)) {
                 cargarTabla();
-            } else {
-                JOptionPane.showMessageDialog(this, "Error al eliminar de la base de datos.");
+                JOptionPane.showMessageDialog(this, "Registro eliminado exitosamente.");
             }
         }
     }

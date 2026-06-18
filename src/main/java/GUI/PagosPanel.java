@@ -22,11 +22,11 @@ public class PagosPanel extends JPanel {
 
     private JTable tabla;
     private DefaultTableModel modeloTabla;
+    private JTextField txtBuscar;
 
     public PagosPanel() {
         setLayout(new BorderLayout(10, 10));
         setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
-        setBackground(Color.WHITE);
         initComponents();
         cargarTabla();
     }
@@ -48,8 +48,6 @@ public class PagosPanel extends JPanel {
 
         tabla = new JTable(modeloTabla);
         tabla.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        tabla.setFont(new Font("Arial", Font.PLAIN, 13));
-        tabla.setRowHeight(24);
 
         // Ocultar columna ID visualmente
         tabla.getColumnModel().getColumn(0).setMinWidth(0);
@@ -57,23 +55,36 @@ public class PagosPanel extends JPanel {
         tabla.getColumnModel().getColumn(0).setWidth(0);
 
         JScrollPane scroll = new JScrollPane(tabla);
-        add(scroll, BorderLayout.CENTER);
+
+        // Barra de búsqueda sobre la tabla
+        JPanel panelBuscar = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        txtBuscar = new JTextField(20);
+        JButton btnBuscar = new JButton("Buscar");
+        JButton btnMostrarTodos = new JButton("Mostrar todos");
+        panelBuscar.add(new JLabel("Buscar por Pagador:"));
+        panelBuscar.add(txtBuscar);
+        panelBuscar.add(btnBuscar);
+        panelBuscar.add(btnMostrarTodos);
+
+        btnBuscar.addActionListener(e -> buscar());
+        btnMostrarTodos.addActionListener(e -> cargarTabla());
+        txtBuscar.addActionListener(e -> buscar());
+
+        JPanel centro = new JPanel(new BorderLayout(5, 5));
+        centro.add(panelBuscar, BorderLayout.NORTH);
+        centro.add(scroll, BorderLayout.CENTER);
+        add(centro, BorderLayout.CENTER);
 
         // --- BOTONES (sur) ---
         JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        panelBotones.setBackground(Color.WHITE);
 
         JButton btnAgregar = new JButton("Agregar");
         JButton btnModificar = new JButton("Modificar");
         JButton btnEliminar = new JButton("Eliminar");
 
         btnAgregar.setBackground(new Color(70, 160, 70));
-        btnAgregar.setFocusPainted(false);
-
-        btnModificar.setFocusPainted(false);
 
         btnEliminar.setBackground(new Color(200, 60, 60));
-        btnEliminar.setFocusPainted(false);
 
         panelBotones.add(btnAgregar);
         panelBotones.add(btnModificar);
@@ -99,6 +110,36 @@ public class PagosPanel extends JPanel {
 
         List<Pago> pagos = controller.listar();
         for (Pago p : pagos) {
+            Reserva r = mapaReservas.get(p.getReservaId());
+            String descReserva = "Reserva #" + p.getReservaId();
+            if (r != null) {
+                descReserva += " - " + r.getR_Fecha();
+            }
+            modeloTabla.addRow(new Object[]{
+                p.getId(),
+                p.getMontoPagado(),
+                p.getPagador() != null ? p.getPagador() : "-",
+                p.getMetodoPago(),
+                p.getFechaPago(),
+                descReserva
+            });
+        }
+    }
+
+    // filtra la tabla usando el texto del buscador
+    private void buscar() {
+        String texto = txtBuscar.getText().trim();
+        if (texto.isEmpty()) { cargarTabla(); return; }
+        modeloTabla.setRowCount(0);
+        
+        List<Reserva> reservasList = reservaController.listar();
+        Map<Integer, Reserva> mapaReservas = new HashMap<>();
+        for (Reserva r : reservasList) {
+            mapaReservas.put(r.getR_ID(), r);
+        }
+
+        List<Pago> resultados = controller.buscar(texto);
+        for (Pago p : resultados) {
             Reserva r = mapaReservas.get(p.getReservaId());
             String descReserva = "Reserva #" + p.getReservaId();
             if (r != null) {
