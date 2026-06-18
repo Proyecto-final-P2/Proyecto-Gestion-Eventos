@@ -87,12 +87,12 @@ Registro de pagos asociados a una reserva.
 
 Muestra los eventos **confirmados**, con cliente, salón, fecha, cantidad de
 invitados y costo final.
+Tambien nos genera un reporte grafico en formato pdf con los eventos, costos, cantidad de invitados y servicios adicionales que tiene cada evento. Para generarlo hay que presionar el boton verde con el icono de pdf que dice "Generar Reporte".
 
 - Usá el combo **"Filtrar por salón"** para ver solo los eventos de un salón
   puntual, o "Todos" para ver el listado completo.
 - **Refrescar** vuelve a consultar la base de datos por si hubo cambios.
-- Esta pantalla es solo de consulta; no incluye exportación a PDF (queda
-  pendiente para una próxima versión, ver `docs/DECISIONES_DISENO.md`).
+
 
 ## 11. Administradores
 
