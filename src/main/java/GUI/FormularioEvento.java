@@ -58,7 +58,28 @@ public class FormularioEvento extends JDialog {
         cbTipo = new JComboBox<>(new String[]{
             "Boda", "Casamiento", "Cumpleaños", "Conferencia", "Fiesta de Navidad", "Reunión de Empresa", "Otros"
         });
-        cbTipo.setEditable(true);
+        cbTipo.setEditable(false);
+        cbTipo.addActionListener(e -> {
+            Object sel = cbTipo.getSelectedItem();
+            if (sel != null) {
+                String val = sel.toString();
+                if ("Otros".equals(val)) {
+                    cbTipo.setEditable(true);
+                    Component editor = cbTipo.getEditor().getEditorComponent();
+                    editor.requestFocus();
+                    if (editor instanceof JTextField) {
+                        ((JTextField) editor).selectAll();
+                    }
+                } else {
+                    boolean isPredef = java.util.Arrays.asList(
+                        "Boda", "Casamiento", "Cumpleaños", "Conferencia", "Fiesta de Navidad", "Reunión de Empresa"
+                    ).contains(val);
+                    if (isPredef) {
+                        cbTipo.setEditable(false);
+                    }
+                }
+            }
+        });
         
         spinFecha = new JSpinner(new SpinnerDateModel());
         JSpinner.DateEditor dateEditor = new JSpinner.DateEditor(spinFecha, "dd-MM-yyyy");
@@ -127,7 +148,14 @@ public class FormularioEvento extends JDialog {
     }
 
     private void precargarCampos(Evento e) {
-        cbTipo.setSelectedItem(e.getTipo());
+        String tipo = e.getTipo();
+        boolean isPredef = java.util.Arrays.asList(
+            "Boda", "Casamiento", "Cumpleaños", "Conferencia", "Fiesta de Navidad", "Reunión de Empresa", "Otros"
+        ).contains(tipo);
+        if (!isPredef) {
+            cbTipo.setEditable(true);
+        }
+        cbTipo.setSelectedItem(tipo);
         
         try {
             java.util.Date d = java.sql.Date.valueOf(e.getFecha());
