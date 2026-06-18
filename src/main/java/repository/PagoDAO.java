@@ -48,6 +48,20 @@ public class PagoDAO {
         return null;
     }
 
+    // busca pagos que contengan ese texto en el nombre del pagador
+    public List<Pago> buscarPorPagador(String pagador) throws SQLException {
+        List<Pago> lista = new ArrayList<>();
+        String sql = "SELECT * FROM Pago WHERE P_Pagador LIKE ?";
+        try (Connection con = Util.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, "%" + pagador + "%");
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) lista.add(mapear(rs));
+            }
+        }
+        return lista;
+    }
+
     // actualiza los datos de un pago existente
     public void actualizar(Pago p) throws SQLException {
         String sql = "UPDATE Pago SET P_MontoPagado=?, Reserva_R_ID=?, P_Pagador=?, P_MetodoPago=?, P_FechaPago=? WHERE P_ID=?";

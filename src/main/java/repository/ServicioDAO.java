@@ -32,6 +32,20 @@ public class ServicioDAO {
         return lista;
     }
 
+    // busca servicios que contengan ese texto en el proveedor
+    public List<Servicio> buscarPorProveedor(String proveedor) throws SQLException {
+        List<Servicio> lista = new ArrayList<>();
+        String sql = "SELECT * FROM Servicios WHERE SE_Proveedor LIKE ?";
+        try (Connection con = Util.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setString(1, "%" + proveedor + "%");
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) lista.add(mapear(rs));
+            }
+        }
+        return lista;
+    }
+
     // actualiza servicio en la BD
     public void actualizar(Servicio s) throws SQLException {
         String sql = "UPDATE Servicios SET SE_Tipo=?, SE_Proveedor=?, SE_Costo=?, SE_Cantidad=?, SE_Estado=? WHERE SE_ID=?";

@@ -61,6 +61,16 @@ public class PagoController {
         }
     }
 
+    // Busca pagos que coincidan con el nombre del pagador
+    public List<Pago> buscar(String pagador) {
+        try {
+            return dao.buscarPorPagador(pagador);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(null, "Error al buscar pagos: " + ex.getMessage());
+            return List.of();
+        }
+    }
+
     public List<Pago> listarPorCliente(int clienteId) {
         try {
             return dao.listarPorCliente(clienteId);

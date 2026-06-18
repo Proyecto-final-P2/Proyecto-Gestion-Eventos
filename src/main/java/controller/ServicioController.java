@@ -23,6 +23,16 @@ public class ServicioController {
         }
     }
 
+    // Busca servicios que coincidan con el proveedor
+    public List<Servicio> buscar(String proveedor) {
+        try {
+            return dao.buscarPorProveedor(proveedor);
+        } catch (SQLException e) {
+            System.err.println("Error al buscar servicios: " + e.getMessage());
+            return new ArrayList<>();
+        }
+    }
+
     // Guarda y devuelve true si fue un éxito
     public boolean guardarServicio(Servicio s) {
         try {
