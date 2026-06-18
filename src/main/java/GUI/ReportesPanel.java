@@ -6,7 +6,9 @@ import model.PagoPorCliente;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
+import java.io.File;
 import java.util.List;
 
 /**
@@ -23,6 +25,7 @@ public class ReportesPanel extends JPanel {
     private DefaultTableModel modeloConfirmados;
     private JComboBox<String> comboSalon;
     private JButton btnRefrescarConfirmados;
+    private JButton btnGenerarPdf;
 
     // Componentes para Reporte 2: Pagos Totales por Cliente
     private JTable tablaPagos;
@@ -70,16 +73,143 @@ public class ReportesPanel extends JPanel {
         btnRefrescarConfirmados.addActionListener(e -> refrescarConfirmados());
         panelFiltros.add(btnRefrescarConfirmados);
 
+        btnGenerarPdf = new JButton("Generar PDF");
+        btnGenerarPdf.setEnabled(false);
+        btnGenerarPdf.addActionListener(e -> {
+            int selectedRow = tablaConfirmados.getSelectedRow();
+            if (selectedRow != -1) {
+                int columnCount = modeloConfirmados.getColumnCount();
+                String[] columnNames = new String[columnCount];
+                Object[] rowData = new Object[columnCount];
+                for (int i = 0; i < columnCount; i++) {
+                    columnNames[i] = modeloConfirmados.getColumnName(i);
+                    rowData[i] = modeloConfirmados.getValueAt(selectedRow, i);
+                }
+                
+                JFileChooser fileChooser = new JFileChooser();
+                fileChooser.setDialogTitle("Guardar reporte de evento");
+                fileChooser.setFileFilter(new FileNameExtensionFilter("Archivos PDF", "pdf"));
+                fileChooser.setSelectedFile(new File("Evento_Confirmado.pdf"));
+                
+                int userSelection = fileChooser.showSaveDialog(this);
+                if (userSelection == JFileChooser.APPROVE_OPTION) {
+                    File file = fileChooser.getSelectedFile();
+                    String path = file.getAbsolutePath();
+                    if (!path.toLowerCase().endsWith(".pdf")) {
+                        file = new File(path + ".pdf");
+                    }
+                    
+                    boolean exito = confirmadosController.generarPdfEvento(columnNames, rowData, file);
+                    if (exito) {
+                        JOptionPane.showMessageDialog(this, 
+                            "PDF generado correctamente en:\n" + file.getAbsolutePath());
+                    } else {
+                        JOptionPane.showMessageDialog(this, 
+                            "Error al generar el PDF.", 
+                            "Error", 
+                            JOptionPane.ERROR_MESSAGE);
+                    }
+                }
+            }
+        });
+        panelFiltros.add(btnGenerarPdf);
+
+        // Pestaña Detalle Secundaria (abajo)
+        JTabbedPane tabbedDetalle = new JTabbedPane();
+        tabbedDetalle.setPreferredSize(new Dimension(0, 180));
+        tabbedDetalle.setFont(new Font("Arial", Font.BOLD, 12));
+
+        // 1. Pestaña de Servicios Contratados
+        String[] colServicios = {"Servicio", "Proveedor", "Precio Pactado"};
+        final DefaultTableModel modeloServicios = new DefaultTableModel(colServicios, 0) {
+            @Override
+            public boolean isCellEditable(int r, int c) {
+                return false;
+            }
+        };
+        JTable tablaServicios = new JTable(modeloServicios);
+        tablaServicios.setFont(new Font("Arial", Font.PLAIN, 12));
+        tablaServicios.setRowHeight(20);
+        JScrollPane scrollServicios = new JScrollPane(tablaServicios);
+        tabbedDetalle.addTab("Servicios Contratados", scrollServicios);
+
+        // 2. Pestaña de Lista de Invitados
+        String[] colInvitados = {"DNI", "Nombre y Apellido", "Email", "Preferencia Menú", "Asistencia"};
+        final DefaultTableModel modeloInvitados = new DefaultTableModel(colInvitados, 0) {
+            @Override
+            public boolean isCellEditable(int r, int c) {
+                return false;
+            }
+        };
+        JTable tablaInvitados = new JTable(modeloInvitados);
+        tablaInvitados.setFont(new Font("Arial", Font.PLAIN, 12));
+        tablaInvitados.setRowHeight(20);
+        JScrollPane scrollInvitados = new JScrollPane(tablaInvitados);
+        tabbedDetalle.addTab("Lista de Invitados", scrollInvitados);
+
         // Tabla (Centro)
         tablaConfirmados = new JTable();
         tablaConfirmados.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         tablaConfirmados.setDefaultEditor(Object.class, null);
+
+        tablaConfirmados.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                int selectedRow = tablaConfirmados.getSelectedRow();
+                btnGenerarPdf.setEnabled(selectedRow != -1);
+                
+                // Limpiar tablas de detalle
+                modeloServicios.setRowCount(0);
+                modeloInvitados.setRowCount(0);
+                
+                if (selectedRow != -1) {
+                    try {
+                        Object valId = modeloConfirmados.getValueAt(selectedRow, 0);
+                        if (valId != null) {
+                            int evId = Integer.parseInt(valId.toString());
+                            
+                            // Cargar Servicios Contratados
+                            List<Object[]> servicios = confirmadosController.getServiciosContratados(evId);
+                            if (servicios.isEmpty()) {
+                                modeloServicios.addRow(new Object[]{"Sin servicios contratados", "-", "-"});
+                            } else {
+                                for (Object[] s : servicios) {
+                                    modeloServicios.addRow(new Object[]{
+                                        s[0], 
+                                        s[1], 
+                                        "$" + String.format("%.2f", (Double)s[2])
+                                    });
+                                }
+                            }
+
+                            // Cargar Lista de Invitados
+                            List<Object[]> invitados = confirmadosController.getInvitadosEvento(evId);
+                            if (invitados.isEmpty()) {
+                                modeloInvitados.addRow(new Object[]{"-", "Sin invitados registrados", "-", "-", "-"});
+                            } else {
+                                for (Object[] inv : invitados) {
+                                    modeloInvitados.addRow(new Object[]{
+                                        inv[0], // DNI
+                                        inv[1], // Nombre
+                                        inv[2], // Email
+                                        inv[3], // PreferenciaMenú
+                                        inv[4]  // Asistencia
+                                    });
+                                }
+                            }
+                        }
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            }
+        });
 
         JScrollPane scroll = new JScrollPane(tablaConfirmados);
 
         JPanel centro = new JPanel(new BorderLayout(5, 5));
         centro.add(panelFiltros, BorderLayout.NORTH);
         centro.add(scroll, BorderLayout.CENTER);
+        centro.add(tabbedDetalle, BorderLayout.SOUTH);
         panel.add(centro, BorderLayout.CENTER);
 
         return panel;

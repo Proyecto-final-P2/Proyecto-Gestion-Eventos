@@ -2,6 +2,8 @@ package repository;
 
 import model.Reserva;
 import java.sql.*;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -82,5 +84,40 @@ public class ReservaDAO {
             rs.getString("C_NombreApellido"),
             rs.getString("SA_Nombre")
         );
+    }
+
+    // Actualiza los datos de una reserva existente
+    public void actualizar(Reserva r) throws SQLException {
+        String sql = "UPDATE Reserva SET R_Fecha = ?, R_HoraInicio = ?, R_HoraFin = ?, R_Monto = ?, R_ClienteID = ?, R_SalonID = ? WHERE R_ID = ?";
+        try (Connection con = Util.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setDate(1, Date.valueOf(r.getR_Fecha()));
+            ps.setTime(2, Time.valueOf(r.getR_HoraInicio()));
+            ps.setTime(3, Time.valueOf(r.getR_HoraFin()));
+            ps.setDouble(4, r.getR_Monto());
+            ps.setInt(5, r.getR_ClienteID());
+            ps.setInt(6, r.getR_SalonID());
+            ps.setInt(7, r.getR_ID());
+            ps.executeUpdate();
+        }
+    }
+
+    // Verifica si existe superposición horaria para una reserva en un salón y fecha específicos
+    public boolean existeSuperposicion(int salonId, LocalDate fecha, LocalTime horaInicio, LocalTime horaFin, int reservaIdIgnorar) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM Reserva WHERE R_SalonID = ? AND R_Fecha = ? AND R_ID != ? AND R_HoraInicio < ? AND R_HoraFin > ?";
+        try (Connection con = Util.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, salonId);
+            ps.setDate(2, Date.valueOf(fecha));
+            ps.setInt(3, reservaIdIgnorar);
+            ps.setTime(4, Time.valueOf(horaFin));
+            ps.setTime(5, Time.valueOf(horaInicio));
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        }
+        return false;
     }
 }

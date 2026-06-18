@@ -58,6 +58,7 @@ public class ReservasPanel extends JPanel {
         JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
         JButton btnAgregar = new JButton("Agregar");
+        JButton btnModificar = new JButton("Modificar");
         JButton btnActualizar = new JButton("Actualizar");
         JButton btnEliminar = new JButton("Eliminar");
 
@@ -65,11 +66,13 @@ public class ReservasPanel extends JPanel {
         btnEliminar.setBackground(new Color(200, 60, 60));
 
         panelBotones.add(btnAgregar);
+        panelBotones.add(btnModificar);
         panelBotones.add(btnActualizar);
         panelBotones.add(btnEliminar);
         add(panelBotones, BorderLayout.SOUTH);
 
         btnAgregar.addActionListener(e -> abrirFormularioAlta());
+        btnModificar.addActionListener(e -> abrirFormularioEdicion());
         btnActualizar.addActionListener(e -> cargarTabla());
         btnEliminar.addActionListener(e -> eliminarSeleccionado());
     }
@@ -104,6 +107,30 @@ public class ReservasPanel extends JPanel {
         cargarTabla();
     }
 
+    // Abre el formulario modal para editar una reserva seleccionada
+    private void abrirFormularioEdicion() {
+        int fila = tabla.getSelectedRow();
+        if (fila < 0) {
+            JOptionPane.showMessageDialog(this, "Seleccioná una reserva de la tabla.", "Aviso", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+        int id = (int) modeloTabla.getValueAt(fila, 0);
+        try {
+            Reserva r = dao.buscarPorId(id);
+            if (r == null) {
+                JOptionPane.showMessageDialog(this, "No se pudo cargar la reserva seleccionada.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            Window ventana = SwingUtilities.getWindowAncestor(this);
+            JFrame frame = ventana instanceof JFrame ? (JFrame) ventana : null;
+            FormularioReserva form = new FormularioReserva(frame, dao, r);
+            form.setVisible(true);
+            cargarTabla();
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(this, "Error al buscar reserva: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
     // Elimina la reserva seleccionada de la tabla
     private void eliminarSeleccionado() {
         int fila = tabla.getSelectedRow();
@@ -131,6 +158,7 @@ public class ReservasPanel extends JPanel {
  */
 class FormularioReserva extends JDialog {
     private final ReservaDAO dao;
+    private final Reserva reservaExistente; // null si es alta
 
     private JComboBox<model.Cliente> comboCliente;
     private JComboBox<model.Salon> comboSalon;
@@ -142,7 +170,39 @@ class FormularioReserva extends JDialog {
     public FormularioReserva(JFrame parent, ReservaDAO dao) {
         super(parent, "Agregar Reserva", true);
         this.dao = dao;
+        this.reservaExistente = null;
         initComponents();
+    }
+
+    public FormularioReserva(JFrame parent, ReservaDAO dao, Reserva reserva) {
+        super(parent, "Modificar Reserva", true);
+        this.dao = dao;
+        this.reservaExistente = reserva;
+        initComponents();
+        precargarCampos(reserva);
+    }
+
+    private void precargarCampos(Reserva r) {
+        // Seleccionar cliente en el combo
+        for (int i = 0; i < comboCliente.getItemCount(); i++) {
+            model.Cliente c = comboCliente.getItemAt(i);
+            if (c.getId() == r.getR_ClienteID()) {
+                comboCliente.setSelectedIndex(i);
+                break;
+            }
+        }
+        // Seleccionar salón en el combo
+        for (int i = 0; i < comboSalon.getItemCount(); i++) {
+            model.Salon s = comboSalon.getItemAt(i);
+            if (s.getId() == r.getR_SalonID()) {
+                comboSalon.setSelectedIndex(i);
+                break;
+            }
+        }
+        txtFecha.setText(r.getR_Fecha().toString());
+        txtHoraInicio.setText(r.getR_HoraInicio().toString());
+        txtHoraFin.setText(r.getR_HoraFin().toString());
+        txtMonto.setText(String.valueOf(r.getR_Monto()));
     }
 
     private void initComponents() {
@@ -281,6 +341,21 @@ class FormularioReserva extends JDialog {
             return;
         }
 
+        // VALIDACIÓN: Evitar solapamiento en el mismo salón y fecha
+        int idIgnorar = (reservaExistente != null) ? reservaExistente.getR_ID() : -1;
+        try {
+            if (dao.existeSuperposicion(salonSel.getId(), fecha, horaInicio, horaFin, idIgnorar)) {
+                JOptionPane.showMessageDialog(this, 
+                    "El salón ya se encuentra reservado en esa fecha y rango horario. Por favor, elija otro salón, fecha u horario.", 
+                    "Superposición de Reserva", 
+                    JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(this, "Error al verificar superposición: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
         Reserva r = new Reserva();
         r.setR_Fecha(fecha);
         r.setR_HoraInicio(horaInicio);
@@ -290,11 +365,18 @@ class FormularioReserva extends JDialog {
         r.setR_SalonID(salonSel.getId());
 
         try {
-            dao.insertar(r);
-            JOptionPane.showMessageDialog(this, "Reserva agregada correctamente.");
+            if (reservaExistente == null) {
+                dao.insertar(r);
+                JOptionPane.showMessageDialog(this, "Reserva agregada correctamente.");
+            } else {
+                r.setR_ID(reservaExistente.getR_ID());
+                dao.actualizar(r);
+                JOptionPane.showMessageDialog(this, "Reserva modificada correctamente.");
+            }
             dispose();
         } catch (SQLException ex) {
-            JOptionPane.showMessageDialog(this, "Error al insertar reserva en la base de datos: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            String accion = (reservaExistente == null) ? "insertar" : "modificar";
+            JOptionPane.showMessageDialog(this, "Error al " + accion + " reserva en la base de datos: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 }
