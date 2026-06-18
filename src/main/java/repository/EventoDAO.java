@@ -131,4 +131,21 @@ public class EventoDAO {
         e.setSalonId(rs.getInt("Salon_SA_ID"));
         return e;
     }
+
+    // Verifica si ya existe un evento en el mismo salón y fecha
+    public boolean existeSuperposicion(int salonId, java.time.LocalDate fecha, int eventoIdIgnorar) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM Evento WHERE Salon_SA_ID = ? AND E_Fecha = ? AND E_ID != ?";
+        try (Connection con = Util.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, salonId);
+            ps.setDate(2, Date.valueOf(fecha));
+            ps.setInt(3, eventoIdIgnorar);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        }
+        return false;
+    }
 }

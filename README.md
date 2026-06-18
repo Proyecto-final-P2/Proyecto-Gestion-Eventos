@@ -1,19 +1,18 @@
-# 🐐 GOAT Eventos
+#  Gestor de Eventos
 **Sistema de gestión de salón de eventos**
-> Materia: Sistemas de Información II
+> Materia: Programación II
 
 ---
 
 ## 👥 Integrantes
-| Nombre | Módulo asignado |
-|--------|----------------|
-| (completar) | Clientes |
-| (completar) | Eventos |
-| (completar) | Salones + Reservas |
-| (completar) | Servicios |
-| (completar) | Invitados + Pagos |
-| (completar) | Reportes + BD |
-
+| Nombres         |
+|-----------------|
+| Martina Moneo   | 
+| Lisandro Rimada | 
+| Luka Mercado    | 
+| Nico García     | 
+| Alvaro Silvera  | 
+| Jonathan Oliva  | 
 ---
 
 ## 🏗️ Arquitectura
@@ -47,7 +46,7 @@ Instalar **una sola vez** antes de clonar el proyecto:
 ### 1. Clonar el repositorio
 ```bash
 git clone https://github.com/TU_ORG/goatEventos.git
-cd goatEventos
+cd GestordeEventos
 ```
 
 ### 2. Levantar la base de datos con Docker
@@ -57,20 +56,20 @@ docker compose up -d
 Esto descarga MySQL 8, crea la BD `salonDeEventos` y carga todos los datos automáticamente.
 
 Verificar que está corriendo:
-```bash
+En una terminal bash
 docker ps
 # Debe mostrar: goat_mysql   Up
-```
+
 
 ### 3. Abrir el proyecto en IntelliJ
-1. Abrí IntelliJ IDEA
-2. `File → Open` → seleccioná la carpeta `goatEventos`
+1. Abrí tu editor de texto
+2. `File → Open` → seleccioná la carpeta `GestorDeEventos`
 3. IntelliJ detecta el `pom.xml` automáticamente → click en **"Load Maven Project"**
 4. Esperá que descargue las dependencias (barra de progreso abajo)
 
 ### 4. Correr la aplicación
-- Abrí `src/main/java/app/GoatEventos.java`
-- Click derecho → **Run 'GoatEventos.main()'**
+- Abrí `src/main/java/app/GestorDeEventos.java`
+- Click derecho → **Run 'GestorDeEventos.main()'**
 - Debe aparecer la ventana de Login
 
 ---
@@ -110,7 +109,7 @@ git push origin feature/panel-eventos
 - **Nunca pushear directo a `main` ni a `develop`**
 - **Siempre** crear una rama `feature/` para cada tarea
 - Resolver conflictos antes de pedir el PR
-- Si rompés algo, usá una rama `hotfix/nombre`
+- Si rompés algo, usá una rama `hotfix/nombre-del-fix`
 
 ---
 
@@ -134,8 +133,8 @@ git push origin feature/panel-eventos
 Host:     localhost
 Puerto:   3306
 BD:       salonDeEventos
-Usuario:  root
-Password: goat123
+Usuario:  admin
+Password: admin123
 ```
 
 **Comandos útiles de Docker:**
