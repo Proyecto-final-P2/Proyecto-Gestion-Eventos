@@ -18,8 +18,10 @@ public class GestorDeEventos {
             UIManager.put("OptionPane.noButtonText", "No");
             UIManager.put("OptionPane.cancelButtonText", "Cancelar");
             UIManager.put("OptionPane.okButtonText", "Aceptar");
-        } catch (Exception ignored) {
-            // si algo falla se ignora y sigue
+        } catch (Exception e) {
+            // si algo falla se muestra el error
+            System.out.println("Error al iniciar la aplicación: " + e.getMessage());
+            e.printStackTrace(); // mostrar el stack trace completo del error
         }
 
         // abre la primera pantalla del programa (Login) y la muestra
