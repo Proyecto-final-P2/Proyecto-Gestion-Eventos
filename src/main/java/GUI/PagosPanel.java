@@ -94,7 +94,7 @@ public class PagosPanel extends JPanel {
         List<Reserva> reservasList = reservaController.listar();
         Map<Integer, Reserva> mapaReservas = new HashMap<>();
         for (Reserva r : reservasList) {
-            mapaReservas.put(r.getId(), r);
+            mapaReservas.put(r.getR_ID(), r);
         }
 
         List<Pago> pagos = controller.listar();
@@ -102,7 +102,7 @@ public class PagosPanel extends JPanel {
             Reserva r = mapaReservas.get(p.getReservaId());
             String descReserva = "Reserva #" + p.getReservaId();
             if (r != null) {
-                descReserva += " - " + r.getFecha();
+                descReserva += " - " + r.getR_Fecha();
             }
             modeloTabla.addRow(new Object[]{
                 p.getId(),

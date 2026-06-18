@@ -7,7 +7,7 @@ import java.util.List;
 
 public class ServicioDAO {
 
-    // inserta servicio en la BD
+// inserta servicio en la BD (SIN EL ID)
     public void insertar(Servicio s) throws SQLException {
         String sql = "INSERT INTO Servicios (SE_Tipo, SE_Proveedor, SE_Costo, SE_Cantidad, SE_Estado) VALUES (?,?,?,?,?)";
         try (Connection con = Util.getConnection();
@@ -20,7 +20,6 @@ public class ServicioDAO {
             ps.executeUpdate();
         }
     }
-
     // lista servicios de la BD
     public List<Servicio> listar() throws SQLException {
         List<Servicio> lista = new ArrayList<>();
