@@ -33,7 +33,7 @@ public class ServiciosPanel extends JPanel {
         add(titulo, BorderLayout.NORTH);
 
         // --- TABLA (centro) ---
-        String[] columnas = {"ID", "Tipo", "Proveedor", "Costo", "Cantidad", "Estado"};
+        String[] columnas = {"ID", "Tipo", "Proveedor", "Costo"};
         modeloTabla = new DefaultTableModel(columnas, 0) {
             @Override public boolean isCellEditable(int r, int c) { return false; }
         };
@@ -92,7 +92,7 @@ public class ServiciosPanel extends JPanel {
         List<Servicio> servicios = controller.listarServicios();
         for (Servicio s : servicios) {
             modeloTabla.addRow(new Object[]{
-                s.getId(), s.getTipo(), s.getProveedor(), s.getCosto(), s.getCantidad(), s.getEstado()
+                s.getId(), s.getTipo(), s.getProveedor(), s.getCosto()
             });
         }
     }
@@ -105,7 +105,7 @@ public class ServiciosPanel extends JPanel {
         List<Servicio> resultados = controller.buscar(texto);
         for (Servicio s : resultados) {
             modeloTabla.addRow(new Object[]{
-                s.getId(), s.getTipo(), s.getProveedor(), s.getCosto(), s.getCantidad(), s.getEstado()
+                s.getId(), s.getTipo(), s.getProveedor(), s.getCosto()
             });
         }
     }
@@ -131,8 +131,6 @@ public class ServiciosPanel extends JPanel {
         s.setTipo(modeloTabla.getValueAt(fila, 1).toString());
         s.setProveedor(modeloTabla.getValueAt(fila, 2).toString());
         s.setCosto(Double.parseDouble(modeloTabla.getValueAt(fila, 3).toString()));
-        s.setCantidad(Integer.parseInt(modeloTabla.getValueAt(fila, 4).toString()));
-        s.setEstado(modeloTabla.getValueAt(fila, 5).toString());
 
         Window ventana = SwingUtilities.getWindowAncestor(this);
         JFrame frame = ventana instanceof JFrame ? (JFrame) ventana : null;

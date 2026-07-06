@@ -16,8 +16,6 @@ public class FormularioServicio extends JDialog {
     private JComboBox<String> cmbTipo;
     private JTextField txtProveedor;
     private JTextField txtCosto;
-    private JTextField txtCantidad;
-    private JComboBox<String> cmbEstado;
 
     // ----- Constructor ALTA -----
     public FormularioServicio(JFrame parent, ServicioController controller) {
@@ -50,14 +48,11 @@ public class FormularioServicio extends JDialog {
         cmbTipo = new JComboBox<>(new String[]{"Catering", "DJ", "Decoración", "Sonido", "Iluminación", "Fotografía", "Seguridad", "Otro"});
         txtProveedor = new JTextField();
         txtCosto = new JTextField();
-        txtCantidad = new JTextField();
-        cmbEstado = new JComboBox<>(new String[]{"confirmado", "pendiente de confirmacion", "cancelado"});
 
         agregarCampo(panel, gbc, 0, "Tipo (*):", cmbTipo);
         agregarCampo(panel, gbc, 2, "Proveedor (*):", txtProveedor);
         agregarCampo(panel, gbc, 4, "Costo ($) (*):", txtCosto);
-        agregarCampo(panel, gbc, 6, "Cantidad (*):", txtCantidad);
-        agregarCampo(panel, gbc, 8, "Estado (*):", cmbEstado);
+        agregarCampo(panel, gbc, 4, "Costo ($) (*):", txtCosto);
 
         JButton btnGuardar  = new JButton("Guardar");
         JButton btnCancelar = new JButton("Cancelar");
@@ -67,7 +62,7 @@ public class FormularioServicio extends JDialog {
         panelBotones.add(btnCancelar);
         panelBotones.add(btnGuardar);
 
-        gbc.gridy = 10;
+        gbc.gridy = 6;
         gbc.insets = new Insets(15, 5, 5, 5);
         panel.add(panelBotones, gbc);
 
@@ -92,31 +87,27 @@ public class FormularioServicio extends JDialog {
         cmbTipo.setSelectedItem(s.getTipo());
         txtProveedor.setText(s.getProveedor());
         txtCosto.setText(String.valueOf(s.getCosto()));
-        txtCantidad.setText(String.valueOf(s.getCantidad()));
-        cmbEstado.setSelectedItem(s.getEstado());
     }
 
     private void guardar() {
         String proveedor = txtProveedor.getText().trim();
         String costoStr = txtCosto.getText().trim();
-        String cantidadStr = txtCantidad.getText().trim();
 
-        if (proveedor.isEmpty() || costoStr.isEmpty() || cantidadStr.isEmpty()) {
+        if (proveedor.isEmpty() || costoStr.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Complete todos los campos marcados con (*).", "Error de validación", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
         try {
             double costo = Double.parseDouble(costoStr);
-            int cantidad = Integer.parseInt(cantidadStr);
 
-            if (costo < 0 || cantidad < 0) {
-                JOptionPane.showMessageDialog(this, "El costo y la cantidad no pueden ser negativos.", "Error de validación", JOptionPane.ERROR_MESSAGE);
+            if (costo < 0) {
+                JOptionPane.showMessageDialog(this, "El costo no puede ser negativo.", "Error de validación", JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
             int id = (servicioExistente == null) ? 0 : servicioExistente.getId();
-            Servicio s = new Servicio(id, (String) cmbTipo.getSelectedItem(), proveedor, costo, cantidad, (String) cmbEstado.getSelectedItem());
+            Servicio s = new Servicio(id, (String) cmbTipo.getSelectedItem(), proveedor, costo);
 
             if (servicioExistente == null) {
                 if (controller.guardarServicio(s)) {
@@ -134,7 +125,7 @@ public class FormularioServicio extends JDialog {
                 }
             }
         } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "Costo y Cantidad deben ser números válidos.", "Error de validación", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Costo debe ser un número válido.", "Error de validación", JOptionPane.WARNING_MESSAGE);
         }
     }
 }

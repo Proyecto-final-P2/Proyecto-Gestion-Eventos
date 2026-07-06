@@ -1,9 +1,9 @@
 package GUI;
 
 import controller.PagoController;
-import controller.ReservaController;
+import controller.EventoController;
 import model.Pago;
-import model.Reserva;
+import model.Evento;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
@@ -13,12 +13,11 @@ import java.util.Map;
 
 /**
  * Panel de gestión de Pagos (ABM Completo, Modo Ventana).
- * Sigue la estructura visual exacta de ClientesPanel.java.
  */
 public class PagosPanel extends JPanel {
 
     private final PagoController controller = new PagoController();
-    private final ReservaController reservaController = new ReservaController();
+    private final EventoController eventoController = new EventoController();
 
     private JTable tabla;
     private DefaultTableModel modeloTabla;
@@ -38,7 +37,7 @@ public class PagosPanel extends JPanel {
         add(titulo, BorderLayout.NORTH);
 
         // --- TABLA (centro) ---
-        String[] columnas = {"ID", "Monto Pagado", "Pagador", "Método", "Fecha", "Reserva"};
+        String[] columnas = {"ID", "Monto Pagado", "Pagador", "Método", "Fecha", "Evento"};
         modeloTabla = new DefaultTableModel(columnas, 0) {
             @Override
             public boolean isCellEditable(int r, int c) {
@@ -97,23 +96,21 @@ public class PagosPanel extends JPanel {
         btnEliminar.addActionListener(e  -> eliminarSeleccionado());
     }
 
-    // Llena la tabla con los pagos registrados
     private void cargarTabla() {
         modeloTabla.setRowCount(0);
         
-        // Obtenemos las reservas para relacionar la fecha
-        List<Reserva> reservasList = reservaController.listar();
-        Map<Integer, Reserva> mapaReservas = new HashMap<>();
-        for (Reserva r : reservasList) {
-            mapaReservas.put(r.getR_ID(), r);
+        List<Evento> eventosList = eventoController.listar();
+        Map<Integer, Evento> mapaEventos = new HashMap<>();
+        for (Evento e : eventosList) {
+            mapaEventos.put(e.getId(), e);
         }
 
         List<Pago> pagos = controller.listar();
         for (Pago p : pagos) {
-            Reserva r = mapaReservas.get(p.getReservaId());
-            String descReserva = "Reserva #" + p.getReservaId();
-            if (r != null) {
-                descReserva += " - " + r.getR_Fecha();
+            Evento e = mapaEventos.get(p.getEventoId());
+            String desc = "Evento #" + p.getEventoId();
+            if (e != null) {
+                desc += " - " + e.getTipo() + " (" + e.getFecha() + ")";
             }
             modeloTabla.addRow(new Object[]{
                 p.getId(),
@@ -121,29 +118,28 @@ public class PagosPanel extends JPanel {
                 p.getPagador() != null ? p.getPagador() : "-",
                 p.getMetodoPago(),
                 p.getFechaPago(),
-                descReserva
+                desc
             });
         }
     }
 
-    // filtra la tabla usando el texto del buscador
     private void buscar() {
         String texto = txtBuscar.getText().trim();
         if (texto.isEmpty()) { cargarTabla(); return; }
         modeloTabla.setRowCount(0);
         
-        List<Reserva> reservasList = reservaController.listar();
-        Map<Integer, Reserva> mapaReservas = new HashMap<>();
-        for (Reserva r : reservasList) {
-            mapaReservas.put(r.getR_ID(), r);
+        List<Evento> eventosList = eventoController.listar();
+        Map<Integer, Evento> mapaEventos = new HashMap<>();
+        for (Evento e : eventosList) {
+            mapaEventos.put(e.getId(), e);
         }
 
         List<Pago> resultados = controller.buscar(texto);
         for (Pago p : resultados) {
-            Reserva r = mapaReservas.get(p.getReservaId());
-            String descReserva = "Reserva #" + p.getReservaId();
-            if (r != null) {
-                descReserva += " - " + r.getR_Fecha();
+            Evento e = mapaEventos.get(p.getEventoId());
+            String desc = "Evento #" + p.getEventoId();
+            if (e != null) {
+                desc += " - " + e.getTipo() + " (" + e.getFecha() + ")";
             }
             modeloTabla.addRow(new Object[]{
                 p.getId(),
@@ -151,12 +147,11 @@ public class PagosPanel extends JPanel {
                 p.getPagador() != null ? p.getPagador() : "-",
                 p.getMetodoPago(),
                 p.getFechaPago(),
-                descReserva
+                desc
             });
         }
     }
 
-    // Abre el formulario vacío para agregar un pago nuevo
     private void abrirFormularioAlta() {
         Window ventana = SwingUtilities.getWindowAncestor(this);
         JFrame frame = ventana instanceof JFrame ? (JFrame) ventana : null;
@@ -165,7 +160,6 @@ public class PagosPanel extends JPanel {
         cargarTabla();
     }
 
-    // Abre el formulario pre-cargado para editar el pago seleccionado
     private void abrirFormularioEdicion() {
         int fila = tabla.getSelectedRow();
         if (fila < 0) {
@@ -173,7 +167,6 @@ public class PagosPanel extends JPanel {
             return;
         }
 
-        // Obtener datos del pago por ID desde el controlador
         int id = (int) modeloTabla.getValueAt(fila, 0);
         Pago p = controller.buscarPorId(id);
         if (p == null) {
@@ -188,7 +181,6 @@ public class PagosPanel extends JPanel {
         cargarTabla();
     }
 
-    // Elimina el pago seleccionado previa confirmación
     private void eliminarSeleccionado() {
         int fila = tabla.getSelectedRow();
         if (fila < 0) {

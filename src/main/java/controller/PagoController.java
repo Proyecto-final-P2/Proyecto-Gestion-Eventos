@@ -79,11 +79,11 @@ public class PagoController {
             return List.of();
         }
     }
-    public List<Pago> listarPorReserva(int reservaId) {
+    public List<Pago> listarPorEvento(int eventoId) {
         try {
-            return dao.listarPorReserva(reservaId);
+            return dao.listarPorEvento(eventoId);
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(null, "Error al listar pagos de la reserva: " + ex.getMessage());
+            JOptionPane.showMessageDialog(null, "Error al listar pagos del evento: " + ex.getMessage());
             return List.of();
         }
     }

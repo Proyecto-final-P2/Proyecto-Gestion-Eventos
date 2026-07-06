@@ -9,11 +9,11 @@ public class PagoDAO {
 
     // inserta un pago en la BD
     public void insertar(Pago p) throws SQLException {
-        String sql = "INSERT INTO Pago (P_MontoPagado, Reserva_R_ID, P_Pagador, P_MetodoPago, P_FechaPago) VALUES (?,?,?,?,?)";
+        String sql = "INSERT INTO Pago (P_MontoPagado, Evento_E_ID, P_Pagador, P_MetodoPago, P_FechaPago) VALUES (?,?,?,?,?)";
         try (Connection con = Util.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setDouble(1, p.getMontoPagado());
-            ps.setInt(2, p.getReservaId());
+            ps.setInt(2, p.getEventoId());
             ps.setString(3, p.getPagador());
             ps.setString(4, p.getMetodoPago());
             ps.setDate(5, java.sql.Date.valueOf(p.getFechaPago() != null ? p.getFechaPago() : java.time.LocalDate.now()));
@@ -64,11 +64,11 @@ public class PagoDAO {
 
     // actualiza los datos de un pago existente
     public void actualizar(Pago p) throws SQLException {
-        String sql = "UPDATE Pago SET P_MontoPagado=?, Reserva_R_ID=?, P_Pagador=?, P_MetodoPago=?, P_FechaPago=? WHERE P_ID=?";
+        String sql = "UPDATE Pago SET P_MontoPagado=?, Evento_E_ID=?, P_Pagador=?, P_MetodoPago=?, P_FechaPago=? WHERE P_ID=?";
         try (Connection con = Util.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setDouble(1, p.getMontoPagado());
-            ps.setInt(2, p.getReservaId());
+            ps.setInt(2, p.getEventoId());
             ps.setString(3, p.getPagador());
             ps.setString(4, p.getMetodoPago());
             ps.setDate(5, java.sql.Date.valueOf(p.getFechaPago() != null ? p.getFechaPago() : java.time.LocalDate.now()));
@@ -88,11 +88,11 @@ public class PagoDAO {
     }
 
     // registra el pago en la BD
-    public String registrarPago(int reservaId, double monto) throws SQLException {
-        String sql = "{CALL RegistrarPagoParaReserva(?,?,?)}";
+    public String registrarPago(int eventoId, double monto) throws SQLException {
+        String sql = "{CALL RegistrarPagoParaEvento(?,?,?)}";
         try (Connection con = Util.getConnection();
              CallableStatement cs = con.prepareCall(sql)) {
-            cs.setInt(1, reservaId);
+            cs.setInt(1, eventoId);
             cs.setDouble(2, monto);
             cs.registerOutParameter(3, Types.VARCHAR);
             cs.execute();
@@ -100,13 +100,13 @@ public class PagoDAO {
         }
     }
 
-    // lista pagos de una reserva específica
-    public List<Pago> listarPorReserva(int reservaId) throws SQLException {
+    // lista pagos de un evento específico
+    public List<Pago> listarPorEvento(int eventoId) throws SQLException {
         List<Pago> lista = new ArrayList<>();
-        String sql = "SELECT * FROM Pago WHERE Reserva_R_ID = ?";
+        String sql = "SELECT * FROM Pago WHERE Evento_E_ID = ?";
         try (Connection con = Util.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.setInt(1, reservaId);
+            ps.setInt(1, eventoId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) lista.add(mapear(rs));
             }
@@ -119,8 +119,7 @@ public class PagoDAO {
         List<Pago> lista = new ArrayList<>();
         String sql =
             "SELECT p.* FROM Pago p " +
-            "JOIN Reserva r ON p.Reserva_R_ID = r.R_ID " +
-            "JOIN Evento e ON e.E_ID = r.R_ID " +
+            "JOIN Evento e ON p.Evento_E_ID = e.E_ID " +
             "WHERE e.Cliente_C_ID = ?";
         try (Connection con = Util.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
@@ -139,7 +138,7 @@ public class PagoDAO {
         return new Pago(
             rs.getInt("P_ID"),
             rs.getDouble("P_MontoPagado"),
-            rs.getInt("Reserva_R_ID"),
+            rs.getInt("Evento_E_ID"),
             rs.getString("P_Pagador"),
             rs.getString("P_MetodoPago"),
             localDate

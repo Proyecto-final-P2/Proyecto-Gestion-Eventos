@@ -38,7 +38,7 @@ public class MenuPrincipal extends JFrame {
         sidebar.add(Box.createRigidArea(new Dimension(0, 20)));
 
         // Botones de navegación
-        String[] secciones = {"Clientes", "Eventos", "Salones", "Reservas", "Servicios", "Invitados", "Pagos", "Reportes"};
+        String[] secciones = {"Clientes", "Eventos", "Salones", "Servicios", "Invitados", "Pagos", "Reportes"};
         for (String seccion : secciones) {
             JButton btn = crearBotonMenu(seccion);
             sidebar.add(btn);
@@ -91,7 +91,6 @@ public class MenuPrincipal extends JFrame {
         panelContenido.add(new ClientesPanel(), "Clientes");
         panelContenido.add(new EventosPanel(), "Eventos");
         panelContenido.add(new SalonesPanel(), "Salones");
-        panelContenido.add(new ReservasPanel(), "Reservas");
         panelContenido.add(new ServiciosPanel(), "Servicios");
         panelContenido.add(new InvitadosPanel(), "Invitados");
         panelContenido.add(new PagosPanel(), "Pagos");

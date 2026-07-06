@@ -9,14 +9,12 @@ public class ServicioDAO {
 
 // inserta servicio en la BD (SIN EL ID)
     public void insertar(Servicio s) throws SQLException {
-        String sql = "INSERT INTO Servicios (SE_Tipo, SE_Proveedor, SE_Costo, SE_Cantidad, SE_Estado) VALUES (?,?,?,?,?)";
+        String sql = "INSERT INTO Servicios (SE_Tipo, SE_Proveedor, SE_Costo) VALUES (?,?,?)";
         try (Connection con = Util.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, s.getTipo());
             ps.setString(2, s.getProveedor());
             ps.setDouble(3, s.getCosto());
-            ps.setInt(4, s.getCantidad());
-            ps.setString(5, s.getEstado());
             ps.executeUpdate();
         }
     }
@@ -46,17 +44,29 @@ public class ServicioDAO {
         return lista;
     }
 
+    // busca los IDs de los servicios contratados para un evento
+    public List<Integer> obtenerIdsServiciosPorEvento(int eventoId) throws SQLException {
+        List<Integer> lista = new ArrayList<>();
+        String sql = "SELECT Servicios_SE_ID FROM Contratados WHERE Evento_E_ID = ?";
+        try (Connection con = Util.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setInt(1, eventoId);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) lista.add(rs.getInt(1));
+            }
+        }
+        return lista;
+    }
+
     // actualiza servicio en la BD
     public void actualizar(Servicio s) throws SQLException {
-        String sql = "UPDATE Servicios SET SE_Tipo=?, SE_Proveedor=?, SE_Costo=?, SE_Cantidad=?, SE_Estado=? WHERE SE_ID=?";
+        String sql = "UPDATE Servicios SET SE_Tipo=?, SE_Proveedor=?, SE_Costo=? WHERE SE_ID=?";
         try (Connection con = Util.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
             ps.setString(1, s.getTipo());
             ps.setString(2, s.getProveedor());
             ps.setDouble(3, s.getCosto());
-            ps.setInt(4, s.getCantidad());
-            ps.setString(5, s.getEstado());
-            ps.setInt(6, s.getId());
+            ps.setInt(4, s.getId());
             ps.executeUpdate();
         }
     }
@@ -77,9 +87,7 @@ public class ServicioDAO {
             rs.getInt("SE_ID"),
             rs.getString("SE_Tipo"),
             rs.getString("SE_Proveedor"),
-            rs.getDouble("SE_Costo"),
-            rs.getInt("SE_Cantidad"),
-            rs.getString("SE_Estado")
+            rs.getDouble("SE_Costo")
         );
     }
 }

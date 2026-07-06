@@ -8,7 +8,10 @@ import repository.ClienteDAO;
 import repository.SalonDAO;
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.List;
+import controller.ServicioController;
+import model.Servicio;
 
 /**
  * Diálogo modal para alta y modificación de Eventos.
@@ -20,12 +23,14 @@ public class FormularioEvento extends JDialog {
 
     private JComboBox<String> cbTipo;
     private JSpinner spinFecha;
-    private JSpinner spinHorario;
+    private JSpinner spinHoraInicio;
+    private JSpinner spinHoraFin;
     private JTextField txtCantInvitados;
     private JComboBox<String> cbEstado;
-    private JTextField txtCostoFinal;
     private JComboBox<Cliente> cbCliente;
     private JComboBox<Salon> cbSalon;
+    private JPanel panelServiciosCheck;
+    private List<JCheckBox> checkServiciosList;
 
     public FormularioEvento(JFrame parent, EventoController controller) {
         super(parent, "Agregar Evento", true);
@@ -45,7 +50,7 @@ public class FormularioEvento extends JDialog {
     }
 
     private void initComponents() {
-        setMinimumSize(new Dimension(450, 550));
+        setMinimumSize(new Dimension(450, 520));
         setResizable(false);
 
         JPanel panel = new JPanel(new GridBagLayout());
@@ -85,24 +90,37 @@ public class FormularioEvento extends JDialog {
         JSpinner.DateEditor dateEditor = new JSpinner.DateEditor(spinFecha, "dd-MM-yyyy");
         spinFecha.setEditor(dateEditor);
 
-        spinHorario = new JSpinner(new SpinnerDateModel());
-        JSpinner.DateEditor timeEditor = new JSpinner.DateEditor(spinHorario, "HH:mm");
-        spinHorario.setEditor(timeEditor);
+        spinHoraInicio = new JSpinner(new SpinnerDateModel());
+        JSpinner.DateEditor timeEditor = new JSpinner.DateEditor(spinHoraInicio, "HH:mm");
+        spinHoraInicio.setEditor(timeEditor);
+
+        spinHoraFin = new JSpinner(new SpinnerDateModel());
+        JSpinner.DateEditor timeEditorFin = new JSpinner.DateEditor(spinHoraFin, "HH:mm");
+        spinHoraFin.setEditor(timeEditorFin);
 
         txtCantInvitados = new JTextField();
         cbEstado         = new JComboBox<>(new String[]{"confirmado", "pendiente de confirmacion", "cancelado"});
-        txtCostoFinal    = new JTextField();
         cbCliente        = new JComboBox<>();
         cbSalon          = new JComboBox<>();
+        
+        panelServiciosCheck = new JPanel();
+        panelServiciosCheck.setLayout(new BoxLayout(panelServiciosCheck, BoxLayout.Y_AXIS));
+        panelServiciosCheck.setBackground(Color.WHITE);
+        checkServiciosList = new ArrayList<>();
+        
+        JScrollPane scrollServicios = new JScrollPane(panelServiciosCheck);
+        scrollServicios.setPreferredSize(new Dimension(250, 100));
+        scrollServicios.getVerticalScrollBar().setUnitIncrement(16);
 
         agregarCampo(panel, gbc, 0,  "Tipo de Evento (*):", cbTipo);
         agregarCampo(panel, gbc, 2,  "Fecha (*):", spinFecha);
-        agregarCampo(panel, gbc, 4,  "Horario (*):", spinHorario);
-        agregarCampo(panel, gbc, 6,  "Cant. Invitados (*):", txtCantInvitados);
-        agregarCampo(panel, gbc, 8,  "Estado (*):", cbEstado);
-        agregarCampo(panel, gbc, 10, "Costo Final (*):", txtCostoFinal);
+        agregarCampo(panel, gbc, 4,  "Hora Inicio (*):", spinHoraInicio);
+        agregarCampo(panel, gbc, 6,  "Hora Fin (*):", spinHoraFin);
+        agregarCampo(panel, gbc, 8,  "Cant. Invitados (*):", txtCantInvitados);
+        agregarCampo(panel, gbc, 10, "Estado (*):", cbEstado);
         agregarCampo(panel, gbc, 12, "Cliente (*):", cbCliente);
         agregarCampo(panel, gbc, 14, "Salón (*):", cbSalon);
+        agregarCampo(panel, gbc, 16, "Servicios Opcionales:", scrollServicios);
 
         JButton btnGuardar  = new JButton("Guardar");
         JButton btnCancelar = new JButton("Cancelar");
@@ -112,7 +130,7 @@ public class FormularioEvento extends JDialog {
         panelBotones.add(btnCancelar);
         panelBotones.add(btnGuardar);
 
-        gbc.gridy = 16;
+        gbc.gridy = 18;
         gbc.insets = new Insets(15, 5, 5, 5);
         panel.add(panelBotones, gbc);
 
@@ -142,6 +160,16 @@ public class FormularioEvento extends JDialog {
             List<Salon> salones = new SalonDAO().listar();
             for (Salon s : salones) cbSalon.addItem(s);
             cbSalon.setSelectedIndex(-1);
+
+            List<Servicio> servicios = new ServicioController().listarServicios();
+            for (Servicio s : servicios) {
+                JCheckBox chk = new JCheckBox(s.toString());
+                chk.putClientProperty("servicio", s);
+                chk.setBackground(Color.WHITE);
+                checkServiciosList.add(chk);
+                panelServiciosCheck.add(chk);
+            }
+
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, "Error al cargar clientes/salones: " + ex.getMessage());
         }
@@ -163,12 +191,17 @@ public class FormularioEvento extends JDialog {
         } catch(Exception ex) {}
 
         try {
-            java.util.Date t = java.sql.Time.valueOf(e.getHorario());
-            spinHorario.setValue(t);
+            java.util.Date t = java.sql.Time.valueOf(e.getHoraInicio());
+            spinHoraInicio.setValue(t);
         } catch(Exception ex) {}
+
+        try {
+            java.util.Date t = java.sql.Time.valueOf(e.getHoraFin());
+            spinHoraFin.setValue(t);
+        } catch(Exception ex) {}
+
         txtCantInvitados.setText(String.valueOf(e.getCantInvitados()));
         cbEstado.setSelectedItem(e.getEstado());
-        txtCostoFinal.setText(String.valueOf(e.getCostoFinal()));
 
         for (int i = 0; i < cbCliente.getItemCount(); i++) {
             Cliente c = cbCliente.getItemAt(i);
@@ -179,8 +212,22 @@ public class FormularioEvento extends JDialog {
         for (int i = 0; i < cbSalon.getItemCount(); i++) {
             Salon s = cbSalon.getItemAt(i);
             if (s.getId() == e.getSalonId()) {
-                cbSalon.setSelectedIndex(i); break;
+                cbSalon.setSelectedIndex(i); 
+                break;
             }
+        }
+        
+        // Cargar servicios seleccionados (checkear las casillas correspondientes)
+        try {
+            List<Integer> idsContratados = new controller.ServicioController().obtenerIdsServiciosPorEvento(e.getId());
+            for (JCheckBox chk : checkServiciosList) {
+                model.Servicio srv = (model.Servicio) chk.getClientProperty("servicio");
+                if (idsContratados.contains(srv.getId())) {
+                    chk.setSelected(true);
+                }
+            }
+        } catch (Exception ex) {
+            // Ignorar
         }
     }
 
@@ -190,9 +237,8 @@ public class FormularioEvento extends JDialog {
             tipo = cbTipo.getSelectedItem().toString().trim();
         }
         String invitados = txtCantInvitados.getText().trim();
-        String costo     = txtCostoFinal.getText().trim();
 
-        if (tipo.isEmpty() || invitados.isEmpty() || costo.isEmpty()) {
+        if (tipo.isEmpty() || invitados.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Todos los campos son obligatorios.", "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
@@ -203,16 +249,13 @@ public class FormularioEvento extends JDialog {
         }
 
         int cant;
-        double costoNum;
         java.time.LocalDate date;
-        java.time.LocalTime time;
+        java.time.LocalTime tInicio;
+        java.time.LocalTime tFin;
 
         try { cant = Integer.parseInt(invitados); } 
         catch (Exception ex) { JOptionPane.showMessageDialog(this, "Invitados debe ser numérico."); return; }
         
-        try { costoNum = Double.parseDouble(costo); } 
-        catch (Exception ex) { JOptionPane.showMessageDialog(this, "Costo debe ser numérico."); return; }
-
         try { 
             java.util.Date d = (java.util.Date) spinFecha.getValue();
             date = new java.sql.Date(d.getTime()).toLocalDate(); 
@@ -220,12 +263,18 @@ public class FormularioEvento extends JDialog {
         catch (Exception ex) { JOptionPane.showMessageDialog(this, "Formato de fecha inválido."); return; }
 
         try { 
-            java.util.Date t = (java.util.Date) spinHorario.getValue();
-            // LocalTime a partir de Date formateado (para no tener problemas de zona horaria)
+            java.util.Date t = (java.util.Date) spinHoraInicio.getValue();
             String timeStr = new java.text.SimpleDateFormat("HH:mm").format(t);
-            time = java.time.LocalTime.parse(timeStr); 
+            tInicio = java.time.LocalTime.parse(timeStr); 
         } 
-        catch (Exception ex) { JOptionPane.showMessageDialog(this, "Formato de horario inválido."); return; }
+        catch (Exception ex) { JOptionPane.showMessageDialog(this, "Formato de hora de inicio inválido."); return; }
+
+        try { 
+            java.util.Date t = (java.util.Date) spinHoraFin.getValue();
+            String timeStr = new java.text.SimpleDateFormat("HH:mm").format(t);
+            tFin = java.time.LocalTime.parse(timeStr); 
+        } 
+        catch (Exception ex) { JOptionPane.showMessageDialog(this, "Formato de hora de fin inválido."); return; }
 
         Salon salonSeleccionado = (Salon) cbSalon.getSelectedItem();
 
@@ -237,30 +286,43 @@ public class FormularioEvento extends JDialog {
 
         // 2. Validar superposición temporal
         int idActual = (eventoExistente != null) ? eventoExistente.getId() : -1;
-        if (controller.existeSuperposicion(salonSeleccionado.getId(), date, idActual)) {
-            JOptionPane.showMessageDialog(this, "El salón ya se encuentra reservado para esa fecha. Por favor, seleccione otro salón u otra fecha.", "Superposición de Evento", JOptionPane.ERROR_MESSAGE);
+        if (controller.existeSuperposicion(salonSeleccionado.getId(), date, tInicio, tFin, idActual)) {
+            JOptionPane.showMessageDialog(this, "El salón ya se encuentra ocupado en ese horario. Por favor, seleccione otro horario o salón.", "Superposición de Evento", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        // 3. Validar agenda de servicios (Opción B)
+        List<Servicio> serviciosSeleccionados = new ArrayList<>();
+        for (JCheckBox chk : checkServiciosList) {
+            if (chk.isSelected()) {
+                serviciosSeleccionados.add((Servicio) chk.getClientProperty("servicio"));
+            }
+        }
+        List<String> ocupados = controller.verificarDisponibilidadServicios(serviciosSeleccionados, date, tInicio, tFin, idActual);
+        if (!ocupados.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Los siguientes servicios ya están reservados en ese horario:\n- " + String.join("\n- ", ocupados) + "\nPor favor, deselecciónelos o cambie el horario del evento.", "Superposición de Servicios", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
         Evento e = new Evento();
         e.setTipo(tipo);
         e.setFecha(date);
-        e.setHorario(time);
+        e.setHoraInicio(tInicio);
+        e.setHoraFin(tFin);
         e.setCantInvitados(cant);
         e.setEstado(cbEstado.getSelectedItem().toString());
-        e.setCostoFinal(costoNum);
         e.setClienteId(((Cliente) cbCliente.getSelectedItem()).getId());
         e.setSalonId(((Salon) cbSalon.getSelectedItem()).getId());
 
         if (eventoExistente == null) {
-            if (controller.agregar(e)) {
-                JOptionPane.showMessageDialog(this, "Evento guardado exitosamente.");
+            if (controller.agregar(e, serviciosSeleccionados)) {
+                JOptionPane.showMessageDialog(this, "Evento y servicios guardados exitosamente.");
                 dispose();
             }
         } else {
             e.setId(eventoExistente.getId());
-            if (controller.actualizar(e)) {
-                JOptionPane.showMessageDialog(this, "Evento actualizado exitosamente.");
+            if (controller.actualizar(e, serviciosSeleccionados)) {
+                JOptionPane.showMessageDialog(this, "Evento y servicios actualizados exitosamente.");
                 dispose();
             }
         }

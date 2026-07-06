@@ -1,26 +1,24 @@
 package GUI;
 
 import controller.PagoController;
-import controller.ReservaController;
+import controller.EventoController;
 import model.Pago;
-import model.Reserva;
+import model.Evento;
 import javax.swing.*;
 import java.awt.*;
 import java.util.List;
 
 /**
  * Diálogo modal para alta y modificación de Pagos.
- * - Constructor sin Pago → modo ALTA
- * - Constructor con Pago → modo EDICIÓN
  */
 public class FormularioPago extends JDialog {
 
     private final PagoController controller;
-    private final ReservaController reservaController = new ReservaController();
+    private final EventoController eventoController = new EventoController();
     private final Pago pagoExistente; // null si es alta
 
     private JTextField txtMonto;
-    private JComboBox<ReservaComboItem> cbReservas;
+    private JComboBox<EventoComboItem> cbEventos;
     private JTextField txtPagador;
     private JComboBox<String> cbMetodoPago;
 
@@ -30,7 +28,7 @@ public class FormularioPago extends JDialog {
         this.controller = controller;
         this.pagoExistente = null;
         initComponents();
-        cargarComboReservas();
+        cargarComboEventos();
     }
 
     // ----- Constructor EDICIÓN -----
@@ -39,7 +37,7 @@ public class FormularioPago extends JDialog {
         this.controller = controller;
         this.pagoExistente = pago;
         initComponents();
-        cargarComboReservas();
+        cargarComboEventos();
         precargarCampos(pago);
     }
 
@@ -56,12 +54,12 @@ public class FormularioPago extends JDialog {
         gbc.gridx = 0;
 
         txtMonto = new JTextField();
-        cbReservas = new JComboBox<>();
+        cbEventos = new JComboBox<>();
         txtPagador = new JTextField();
         cbMetodoPago = new JComboBox<>(new String[]{"Transferencia", "Efectivo", "Credito", "Debito", "PagoFacil"});
 
         agregarCampo(panel, gbc, 0, "Monto Pagado ($) (*):", txtMonto);
-        agregarCampo(panel, gbc, 2, "Reserva (*):", cbReservas);
+        agregarCampo(panel, gbc, 2, "Evento (*):", cbEventos);
         agregarCampo(panel, gbc, 4, "Realizado por:", txtPagador);
         agregarCampo(panel, gbc, 6, "Método de Pago (*):", cbMetodoPago);
 
@@ -69,11 +67,6 @@ public class FormularioPago extends JDialog {
         JButton btnCancelar = new JButton("Cancelar");
         
         btnGuardar.setBackground(new Color(70, 160, 70));
-        btnGuardar.setFont(new Font("Arial", Font.BOLD, 13));
-        btnGuardar.setFocusPainted(false);
-
-        btnCancelar.setFont(new Font("Arial", Font.PLAIN, 13));
-        btnCancelar.setFocusPainted(false);
 
         JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         panelBotones.setBackground(Color.WHITE);
@@ -101,13 +94,13 @@ public class FormularioPago extends JDialog {
         panel.add(campo, gbc);
     }
 
-    private void cargarComboReservas() {
-        cbReservas.removeAllItems();
-        cbReservas.addItem(new ReservaComboItem(-1, "-- Seleccione una reserva --"));
-        List<Reserva> lista = reservaController.listar();
-        for (Reserva r : lista) {
-            String desc = "Reserva #" + r.getR_ID() + " - " + r.getR_Fecha();
-            cbReservas.addItem(new ReservaComboItem(r.getR_ID(), desc));
+    private void cargarComboEventos() {
+        cbEventos.removeAllItems();
+        cbEventos.addItem(new EventoComboItem(-1, "-- Seleccione un evento --"));
+        List<Evento> lista = eventoController.listar();
+        for (Evento e : lista) {
+            String desc = "Evento #" + e.getId() + " - " + e.getTipo() + " (" + e.getFecha() + ")";
+            cbEventos.addItem(new EventoComboItem(e.getId(), desc));
         }
     }
 
@@ -116,10 +109,10 @@ public class FormularioPago extends JDialog {
         txtPagador.setText(p.getPagador() != null ? p.getPagador() : "");
         cbMetodoPago.setSelectedItem(p.getMetodoPago());
         
-        for (int i = 0; i < cbReservas.getItemCount(); i++) {
-            ReservaComboItem item = cbReservas.getItemAt(i);
-            if (item.getId() == p.getReservaId()) {
-                cbReservas.setSelectedIndex(i);
+        for (int i = 0; i < cbEventos.getItemCount(); i++) {
+            EventoComboItem item = cbEventos.getItemAt(i);
+            if (item.getId() == p.getEventoId()) {
+                cbEventos.setSelectedIndex(i);
                 break;
             }
         }
@@ -145,33 +138,33 @@ public class FormularioPago extends JDialog {
             return;
         }
 
-        ReservaComboItem resItem = (ReservaComboItem) cbReservas.getSelectedItem();
-        if (resItem == null || resItem.getId() == -1) {
-            JOptionPane.showMessageDialog(this, "Debe seleccionar una reserva válida.", "Error de validación", JOptionPane.ERROR_MESSAGE);
+        EventoComboItem evtItem = (EventoComboItem) cbEventos.getSelectedItem();
+        if (evtItem == null || evtItem.getId() == -1) {
+            JOptionPane.showMessageDialog(this, "Debe seleccionar un evento válido.", "Error de validación", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
-        // VALIDACIÓN: El monto acumulado de pagos para esta reserva no debe superar el total de la reserva
-        Reserva res = reservaController.buscarPorId(resItem.getId());
-        if (res == null) {
-            JOptionPane.showMessageDialog(this, "No se pudo verificar la reserva.", "Error", JOptionPane.ERROR_MESSAGE);
+        // VALIDACIÓN: El monto acumulado no debe superar el costo total del evento
+        Evento evt = eventoController.buscarPorId(evtItem.getId());
+        if (evt == null) {
+            JOptionPane.showMessageDialog(this, "No se pudo verificar el evento.", "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
-        double totalReserva = res.getR_Monto();
+        double totalEvento = evt.getCostoTotal();
 
         double yaPagado = 0;
-        List<Pago> pagosDeReserva = controller.listarPorReserva(resItem.getId());
-        for (Pago pag : pagosDeReserva) {
+        List<Pago> pagos = controller.listarPorEvento(evtItem.getId());
+        for (Pago pag : pagos) {
             if (pagoExistente == null || pag.getId() != pagoExistente.getId()) {
                 yaPagado += pag.getMontoPagado();
             }
         }
 
-        if (yaPagado + monto > totalReserva) {
-            double remanente = totalReserva - yaPagado;
+        if (yaPagado + monto > totalEvento) {
+            double remanente = totalEvento - yaPagado;
             JOptionPane.showMessageDialog(this,
-                "El monto ingresado supera el total permitido para la reserva.\n" +
-                "Monto Total Reserva: $" + totalReserva + "\n" +
+                "El monto ingresado supera el total permitido para el evento.\n" +
+                "Costo Total Evento: $" + totalEvento + "\n" +
                 "Monto ya registrado: $" + yaPagado + "\n" +
                 "Máximo permitido para este pago: $" + (remanente < 0 ? 0.0 : remanente),
                 "Error de validación",
@@ -184,20 +177,18 @@ public class FormularioPago extends JDialog {
 
         Pago p = new Pago();
         p.setMontoPagado(monto);
-        p.setReservaId(resItem.getId());
+        p.setEventoId(evtItem.getId());
         p.setPagador(pagador.isEmpty() ? null : pagador);
         p.setMetodoPago(metodo);
 
         if (pagoExistente == null) {
-            // Alta
             if (controller.agregar(p)) {
                 JOptionPane.showMessageDialog(this, "Pago registrado con éxito.");
                 dispose();
             }
         } else {
-            // Edición
             p.setId(pagoExistente.getId());
-            p.setFechaPago(pagoExistente.getFechaPago()); // Preservar fecha original
+            p.setFechaPago(pagoExistente.getFechaPago());
             if (controller.actualizar(p)) {
                 JOptionPane.showMessageDialog(this, "Pago modificado con éxito.");
                 dispose();
@@ -205,14 +196,11 @@ public class FormularioPago extends JDialog {
         }
     }
 
-    /**
-     * Clase auxiliar interna para poblar el combo de reservas
-     */
-    private static class ReservaComboItem {
+    private static class EventoComboItem {
         private final int id;
         private final String descripcion;
 
-        public ReservaComboItem(int id, String descripcion) {
+        public EventoComboItem(int id, String descripcion) {
             this.id = id;
             this.descripcion = descripcion;
         }
