@@ -1,13 +1,12 @@
 package GUI;
 
 import controller.ReporteController;
-import controller.ReportesControlador;
-import model.PagoPorCliente;
+import java.awt.*;
+import util.PdfService;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import java.awt.*;
 import java.io.File;
 import java.util.List;
 
@@ -16,21 +15,28 @@ import java.util.List;
  */
 public class ReportesPanel extends JPanel {
 
-    // Controladores
-    private final ReportesControlador confirmadosController = new ReportesControlador();
-    private final ReporteController pagosController = new ReporteController();
+    // Controlador Único
+    private final ReporteController controller = new ReporteController();
 
-    // Componentes para Reporte 1: Eventos Confirmados
+    // Componentes Operativa
     private JTable tablaConfirmados;
     private DefaultTableModel modeloConfirmados;
     private JComboBox<String> comboSalon;
-    private JButton btnRefrescarConfirmados;
     private JButton btnGenerarPdf;
+    private DefaultTableModel modeloServicios;
+    private DefaultTableModel modeloInvitados;
 
-    // Componentes para Reporte 2: Pagos Totales por Cliente
+    // Componentes Finanzas
     private JTable tablaPagos;
     private DefaultTableModel modeloPagos;
-    private JButton btnRefrescarPagos;
+    private JTable tablaEventosCostosos;
+    private DefaultTableModel modeloEventosCostosos;
+
+    // Componentes Estadísticas
+    private JTable tablaServiciosTop;
+    private DefaultTableModel modeloServiciosTop;
+    private JTable tablaClientesTop;
+    private DefaultTableModel modeloClientesTop;
 
     public ReportesPanel() {
         setLayout(new BorderLayout());
@@ -38,30 +44,27 @@ public class ReportesPanel extends JPanel {
         JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.setFont(new Font("Arial", Font.BOLD, 14));
         
-        // Pestaña 1: Eventos Confirmados
-        tabbedPane.addTab("Eventos Confirmados", crearPanelConfirmados());
-        
-        // Pestaña 2: Pagos por Cliente
-        tabbedPane.addTab("Pagos por Cliente", crearPanelPagos());
+        tabbedPane.addTab("Eventos", crearPanelConfirmados());
+        tabbedPane.addTab("Pagos y Costos", crearPanelFinanzas());
+        tabbedPane.addTab("Estadísticas", crearPanelEstadisticas());
         
         add(tabbedPane, BorderLayout.CENTER);
         
-        // Cargar datos iniciales
+        // Cargar datos
         cargarDatosConfirmados();
-        cargarDatosPagos();
+        cargarDatosFinanzas();
+        cargarDatosEstadisticas();
     }
 
-    // --- PESTAÑA 1: EVENTOS CONFIRMADOS ---
+    // ================== PESTAÑA 1: OPERATIVA ==================
     private JPanel crearPanelConfirmados() {
         JPanel panel = new JPanel(new BorderLayout(10, 10));
         panel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
 
-        // Título
-        JLabel titulo = new JLabel("Reporte de Eventos Confirmados");
+        JLabel titulo = new JLabel("Eventos Confirmados");
         titulo.setFont(new Font("Arial", Font.BOLD, 18));
         panel.add(titulo, BorderLayout.NORTH);
 
-        // Filtros (Panel superior)
         JPanel panelFiltros = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
         panelFiltros.add(new JLabel("Filtrar por salón:"));
 
@@ -69,85 +72,26 @@ public class ReportesPanel extends JPanel {
         comboSalon.setPreferredSize(new Dimension(180, 25));
         panelFiltros.add(comboSalon);
 
-        btnRefrescarConfirmados = new JButton("Refrescar");
+        JButton btnRefrescarConfirmados = new JButton("Actualizar");
         btnRefrescarConfirmados.addActionListener(e -> refrescarConfirmados());
         panelFiltros.add(btnRefrescarConfirmados);
 
-        btnGenerarPdf = new JButton("Generar PDF");
+        btnGenerarPdf = new JButton("Exportar a PDF");
         btnGenerarPdf.setEnabled(false);
-        btnGenerarPdf.addActionListener(e -> {
-            int selectedRow = tablaConfirmados.getSelectedRow();
-            if (selectedRow != -1) {
-                int columnCount = modeloConfirmados.getColumnCount();
-                String[] columnNames = new String[columnCount];
-                Object[] rowData = new Object[columnCount];
-                for (int i = 0; i < columnCount; i++) {
-                    columnNames[i] = modeloConfirmados.getColumnName(i);
-                    rowData[i] = modeloConfirmados.getValueAt(selectedRow, i);
-                }
-                
-                JFileChooser fileChooser = new JFileChooser();
-                fileChooser.setDialogTitle("Guardar reporte de evento");
-                fileChooser.setFileFilter(new FileNameExtensionFilter("Archivos PDF", "pdf"));
-                fileChooser.setSelectedFile(new File("Evento_Confirmado.pdf"));
-                
-                int userSelection = fileChooser.showSaveDialog(this);
-                if (userSelection == JFileChooser.APPROVE_OPTION) {
-                    File file = fileChooser.getSelectedFile();
-                    String path = file.getAbsolutePath();
-                    if (!path.toLowerCase().endsWith(".pdf")) {
-                        file = new File(path + ".pdf");
-                    }
-                    
-                    boolean exito = confirmadosController.generarPdfEvento(columnNames, rowData, file);
-                    if (exito) {
-                        JOptionPane.showMessageDialog(this, 
-                            "PDF generado correctamente en:\n" + file.getAbsolutePath());
-                    } else {
-                        JOptionPane.showMessageDialog(this, 
-                            "Error al generar el PDF.", 
-                            "Error", 
-                            JOptionPane.ERROR_MESSAGE);
-                    }
-                }
-            }
-        });
+        btnGenerarPdf.addActionListener(e -> generarPdf());
         panelFiltros.add(btnGenerarPdf);
 
-        // Pestaña Detalle Secundaria (abajo)
         JTabbedPane tabbedDetalle = new JTabbedPane();
         tabbedDetalle.setPreferredSize(new Dimension(0, 180));
-        tabbedDetalle.setFont(new Font("Arial", Font.BOLD, 12));
-
-        // 1. Pestaña de Servicios Contratados
-        String[] colServicios = {"Servicio", "Proveedor", "Precio Pactado"};
-        final DefaultTableModel modeloServicios = new DefaultTableModel(colServicios, 0) {
-            @Override
-            public boolean isCellEditable(int r, int c) {
-                return false;
-            }
-        };
+        
+        modeloServicios = new DefaultTableModel(new String[]{"Servicio", "Proveedor", "Precio Pactado"}, 0);
         JTable tablaServicios = new JTable(modeloServicios);
-        tablaServicios.setFont(new Font("Arial", Font.PLAIN, 12));
-        tablaServicios.setRowHeight(20);
-        JScrollPane scrollServicios = new JScrollPane(tablaServicios);
-        tabbedDetalle.addTab("Servicios Contratados", scrollServicios);
+        tabbedDetalle.addTab("Servicios Contratados", new JScrollPane(tablaServicios));
 
-        // 2. Pestaña de Lista de Invitados
-        String[] colInvitados = {"DNI", "Nombre y Apellido", "Email", "Preferencia Menú", "Asistencia"};
-        final DefaultTableModel modeloInvitados = new DefaultTableModel(colInvitados, 0) {
-            @Override
-            public boolean isCellEditable(int r, int c) {
-                return false;
-            }
-        };
+        modeloInvitados = new DefaultTableModel(new String[]{"DNI", "Nombre y Apellido", "Email", "Preferencia Menú", "Asistencia"}, 0);
         JTable tablaInvitados = new JTable(modeloInvitados);
-        tablaInvitados.setFont(new Font("Arial", Font.PLAIN, 12));
-        tablaInvitados.setRowHeight(20);
-        JScrollPane scrollInvitados = new JScrollPane(tablaInvitados);
-        tabbedDetalle.addTab("Lista de Invitados", scrollInvitados);
+        tabbedDetalle.addTab("Lista de Invitados", new JScrollPane(tablaInvitados));
 
-        // Tabla (Centro)
         tablaConfirmados = new JTable();
         tablaConfirmados.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         tablaConfirmados.setDefaultEditor(Object.class, null);
@@ -156,216 +100,279 @@ public class ReportesPanel extends JPanel {
             if (!e.getValueIsAdjusting()) {
                 int selectedRow = tablaConfirmados.getSelectedRow();
                 btnGenerarPdf.setEnabled(selectedRow != -1);
-                
-                // Limpiar tablas de detalle
                 modeloServicios.setRowCount(0);
                 modeloInvitados.setRowCount(0);
                 
                 if (selectedRow != -1) {
-                    try {
-                        Object valId = modeloConfirmados.getValueAt(selectedRow, 0);
-                        if (valId != null) {
-                            int evId = Integer.parseInt(valId.toString());
-                            
-                            // Cargar Servicios Contratados
-                            List<Object[]> servicios = confirmadosController.getServiciosContratados(evId);
-                            if (servicios.isEmpty()) {
-                                modeloServicios.addRow(new Object[]{"Sin servicios contratados", "-", "-"});
-                            } else {
-                                for (Object[] s : servicios) {
-                                    modeloServicios.addRow(new Object[]{
-                                        s[0], 
-                                        s[1], 
-                                        "$" + String.format("%.2f", (Double)s[2])
-                                    });
-                                }
-                            }
-
-                            // Cargar Lista de Invitados
-                            List<Object[]> invitados = confirmadosController.getInvitadosEvento(evId);
-                            if (invitados.isEmpty()) {
-                                modeloInvitados.addRow(new Object[]{"-", "Sin invitados registrados", "-", "-", "-"});
-                            } else {
-                                for (Object[] inv : invitados) {
-                                    modeloInvitados.addRow(new Object[]{
-                                        inv[0], // DNI
-                                        inv[1], // Nombre
-                                        inv[2], // Email
-                                        inv[3], // PreferenciaMenú
-                                        inv[4]  // Asistencia
-                                    });
-                                }
-                            }
-                        }
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                    }
+                    cargarDetallesEvento(selectedRow);
                 }
             }
         });
 
-        JScrollPane scroll = new JScrollPane(tablaConfirmados);
-
         JPanel centro = new JPanel(new BorderLayout(5, 5));
         centro.add(panelFiltros, BorderLayout.NORTH);
-        centro.add(scroll, BorderLayout.CENTER);
+        centro.add(new JScrollPane(tablaConfirmados), BorderLayout.CENTER);
         centro.add(tabbedDetalle, BorderLayout.SOUTH);
         panel.add(centro, BorderLayout.CENTER);
 
         return panel;
     }
 
+    private void cargarDetallesEvento(int selectedRow) {
+        try {
+            Object valId = modeloConfirmados.getValueAt(selectedRow, 0);
+            if (valId != null) {
+                int evId = Integer.parseInt(valId.toString());
+                
+                List<Object[]> servicios = controller.getServiciosContratados(evId);
+                for (Object[] s : servicios) {
+                    modeloServicios.addRow(new Object[]{s[0], s[1], "$" + String.format("%.2f", (Double)s[2])});
+                }
+
+                List<Object[]> invitados = controller.getInvitadosEvento(evId);
+                for (Object[] inv : invitados) {
+                    modeloInvitados.addRow(inv);
+                }
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    private void generarPdf() {
+        int selectedRow = tablaConfirmados.getSelectedRow();
+        if (selectedRow == -1) return;
+
+        int columnCount = modeloConfirmados.getColumnCount();
+        String[] columnNames = new String[columnCount];
+        Object[] rowData = new Object[columnCount];
+        for (int i = 0; i < columnCount; i++) {
+            columnNames[i] = modeloConfirmados.getColumnName(i);
+            rowData[i] = modeloConfirmados.getValueAt(selectedRow, i);
+        }
+
+        int evId = Integer.parseInt(rowData[0].toString());
+        List<Object[]> servicios = controller.getServiciosContratados(evId);
+        List<Object[]> invitados = controller.getInvitadosEvento(evId);
+        
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Guardar reporte de evento");
+        fileChooser.setFileFilter(new FileNameExtensionFilter("Archivos PDF", "pdf"));
+        fileChooser.setSelectedFile(new File("Evento_Confirmado.pdf"));
+        
+        if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+            File file = fileChooser.getSelectedFile();
+            if (!file.getAbsolutePath().toLowerCase().endsWith(".pdf")) {
+                file = new File(file.getAbsolutePath() + ".pdf");
+            }
+            
+            boolean exito = PdfService.generarPdfEvento(columnNames, rowData, file, servicios, invitados);
+            if (exito) {
+                JOptionPane.showMessageDialog(this, "PDF generado en:\n" + file.getAbsolutePath());
+            } else {
+                JOptionPane.showMessageDialog(this, "Error al generar el PDF.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+
     private void cargarDatosConfirmados() {
         try {
-            // 1. Cargar las columnas de la vista dinámicamente
-            String[] columnas = confirmadosController.getColumnNames();
+            String[] columnas = controller.getColumnNames();
             modeloConfirmados = new DefaultTableModel(columnas, 0) {
-                @Override
-                public boolean isCellEditable(int r, int c) {
-                    return false;
-                }
+                @Override public boolean isCellEditable(int r, int c) { return false; }
             };
             tablaConfirmados.setModel(modeloConfirmados);
 
-            // 2. Cargar Combo Box
             comboSalon.removeAllItems();
             comboSalon.addItem("Todos");
-            List<String> salones = confirmadosController.getSalones();
-            if (salones != null) {
-                for (String s : salones) {
-                    if (s != null) {
-                        comboSalon.addItem(s);
-                    }
-                }
+            for (String s : controller.getSalones()) {
+                if (s != null) comboSalon.addItem(s);
             }
-            comboSalon.setSelectedIndex(0);
 
-            // 3. Agregar el listener después de la primera inicialización
             comboSalon.addActionListener(e -> filtrarEventos());
-
-            // 4. Cargar tabla con todos los registros
             filtrarEventos();
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Error al cargar datos del reporte: " + ex.getMessage(), "Error",
-                    JOptionPane.ERROR_MESSAGE);
-        }
+        } catch (Exception ex) {}
     }
 
     private void filtrarEventos() {
-        if (modeloConfirmados == null)
-            return;
-
-        try {
-            String seleccionado = (String) comboSalon.getSelectedItem();
-            if (seleccionado == null)
-                seleccionado = "Todos";
-
-            List<Object[]> eventos;
-            if (seleccionado.equals("Todos")) {
-                eventos = confirmadosController.getEventosConfirmados();
-            } else {
-                eventos = confirmadosController.getEventosPorSalon(seleccionado);
-            }
-
-            cargarTablaConfirmados(eventos);
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Error al filtrar los eventos: " + ex.getMessage(), "Error",
-                    JOptionPane.ERROR_MESSAGE);
-        }
+        if (modeloConfirmados == null) return;
+        String seleccionado = (String) comboSalon.getSelectedItem();
+        List<Object[]> eventos = (seleccionado == null || seleccionado.equals("Todos")) ? 
+            controller.getEventosConfirmados() : controller.getEventosPorSalon(seleccionado);
+        
+        modeloConfirmados.setRowCount(0);
+        for (Object[] e : eventos) modeloConfirmados.addRow(e);
     }
 
     private void refrescarConfirmados() {
-        try {
-            String seleccionado = (String) comboSalon.getSelectedItem();
-
-            // Desactivar temporalmente el listener para evitar múltiples llamadas al refrescar
-            java.awt.event.ActionListener[] listeners = comboSalon.getActionListeners();
-            for (java.awt.event.ActionListener l : listeners) {
-                comboSalon.removeActionListener(l);
-            }
-
-            comboSalon.removeAllItems();
-            comboSalon.addItem("Todos");
-            List<String> salones = confirmadosController.getSalones();
-            if (salones != null) {
-                for (String s : salones) {
-                    if (s != null) {
-                        comboSalon.addItem(s);
-                    }
-                }
-            }
-
-            if (seleccionado != null) {
-                comboSalon.setSelectedItem(seleccionado);
-            } else {
-                comboSalon.setSelectedIndex(0);
-            }
-
-            // Restaurar listeners
-            for (java.awt.event.ActionListener l : listeners) {
-                comboSalon.addActionListener(l);
-            }
-
-            // Recargar datos
-            filtrarEventos();
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Error al refrescar el reporte: " + ex.getMessage(), "Error",
-                    JOptionPane.ERROR_MESSAGE);
-        }
+        String seleccionado = (String) comboSalon.getSelectedItem();
+        cargarDatosConfirmados();
+        if (seleccionado != null) comboSalon.setSelectedItem(seleccionado);
     }
 
-    private void cargarTablaConfirmados(List<Object[]> filas) {
-        modeloConfirmados.setRowCount(0);
-        if (filas != null) {
-            for (Object[] fila : filas) {
-                modeloConfirmados.addRow(fila);
-            }
-        }
-    }
-
-    // --- PESTAÑA 2: PAGOS POR CLIENTE ---
-    private JPanel crearPanelPagos() {
+    // ================== PESTAÑA 2: PAGOS Y COSTOS ==================
+    private JPanel crearPanelFinanzas() {
         JPanel panel = new JPanel(new BorderLayout(10, 10));
         panel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
 
-        // Título del reporte
-        JLabel lblTitulo = new JLabel("Reporte: Pagos Totales por Cliente", SwingConstants.LEFT);
-        lblTitulo.setFont(new Font("Arial", Font.BOLD, 18));
-        panel.add(lblTitulo, BorderLayout.NORTH);
+        JLabel titulo = new JLabel("Reporte de Pagos y Costos Adicionales");
+        titulo.setFont(new Font("Arial", Font.BOLD, 18));
+        panel.add(titulo, BorderLayout.NORTH);
 
-        // Configuración de la Tabla (Solo Lectura)
-        modeloPagos = new DefaultTableModel(new String[] { "Cliente", "Total Pagado ($)" }, 0) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
+        JPanel panelAcciones = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
+        JButton btnRefrescar = new JButton("Actualizar");
+        btnRefrescar.addActionListener(e -> cargarDatosFinanzas());
+        panelAcciones.add(btnRefrescar);
+        
+        JButton btnPdf = new JButton("Exportar a PDF");
+        btnPdf.addActionListener(e -> generarPdfFinanzas());
+        panelAcciones.add(btnPdf);
+
+        JPanel gridTablas = new JPanel(new GridLayout(2, 1, 10, 10));
+        
+        // Arriba: Pagos por Evento
+        JPanel panelPagos = new JPanel(new BorderLayout(5, 5));
+        panelPagos.setBorder(BorderFactory.createTitledBorder("Pagos Totales por Evento (por Pagador)"));
+        modeloPagos = new DefaultTableModel(new String[]{"ID Evento", "Tipo Evento", "Pagador", "Total Aportado ($)", "Costo Total Evento ($)"}, 0);
         tablaPagos = new JTable(modeloPagos);
-        JScrollPane scrollPane = new JScrollPane(tablaPagos);
-        panel.add(scrollPane, BorderLayout.CENTER);
+        panelPagos.add(new JScrollPane(tablaPagos), BorderLayout.CENTER);
 
-        // Panel inferior con botón para refrescar los datos
-        JPanel panelInferior = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        btnRefrescarPagos = new JButton("Actualizar Reporte");
-        btnRefrescarPagos.addActionListener(e -> cargarDatosPagos());
-        panelInferior.add(btnRefrescarPagos);
-        panel.add(panelInferior, BorderLayout.SOUTH);
+        // Abajo: Eventos Costosos
+        JPanel panelCostosos = new JPanel(new BorderLayout(5, 5));
+        panelCostosos.setBorder(BorderFactory.createTitledBorder("Eventos con Costo de Servicios Extra > $3000"));
+        modeloEventosCostosos = new DefaultTableModel(new String[]{"ID Evento", "Tipo", "Cliente", "Monto Salón ($)", "Monto Servicios ($)", "Costo Total ($)"}, 0);
+        tablaEventosCostosos = new JTable(modeloEventosCostosos);
+        panelCostosos.add(new JScrollPane(tablaEventosCostosos), BorderLayout.CENTER);
+
+        gridTablas.add(panelPagos);
+        gridTablas.add(panelCostosos);
+
+        JPanel centro = new JPanel(new BorderLayout(5, 5));
+        centro.add(panelAcciones, BorderLayout.NORTH);
+        centro.add(gridTablas, BorderLayout.CENTER);
+        panel.add(centro, BorderLayout.CENTER);
 
         return panel;
     }
 
-    private void cargarDatosPagos() {
-        if (modeloPagos == null) return;
-        modeloPagos.setRowCount(0); // Limpiar datos viejos
-        List<PagoPorCliente> datos = pagosController.listarPagosPorCliente();
+    private void cargarDatosFinanzas() {
+        modeloPagos.setRowCount(0);
+        for (Object[] p : controller.listarPagosPorEvento()) {
+            modeloPagos.addRow(p);
+        }
 
-        if (datos.isEmpty()) {
-            Object[] filaVacia = { "No hay datos de pagos registrados", 0.0 };
-            modeloPagos.addRow(filaVacia);
-        } else {
-            for (PagoPorCliente p : datos) {
-                modeloPagos.addRow(new Object[] { p.getCliente(), p.getTotalPagado() });
-            }
+        modeloEventosCostosos.setRowCount(0);
+        for (Object[] e : controller.listarEventosCostosos()) {
+            modeloEventosCostosos.addRow(e);
+        }
+    }
+    
+    private void generarPdfFinanzas() {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Guardar reporte de pagos y costos");
+        fileChooser.setFileFilter(new FileNameExtensionFilter("Archivos PDF", "pdf"));
+        fileChooser.setSelectedFile(new File("Reporte_Pagos_Costos.pdf"));
+        
+        if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+            File file = fileChooser.getSelectedFile();
+            if (!file.getAbsolutePath().toLowerCase().endsWith(".pdf")) file = new File(file.getAbsolutePath() + ".pdf");
+            
+            List<String> subtitulos = java.util.Arrays.asList("Pagos Totales por Evento", "Eventos Costosos en Servicios Extra");
+            List<String[]> columnas = java.util.Arrays.asList(
+                new String[]{"ID", "Tipo", "Pagador", "Total Aportado", "Costo Evento"},
+                new String[]{"ID", "Tipo", "Cliente", "Monto Salon", "Monto Serv.", "Total"}
+            );
+            List<List<Object[]>> filas = java.util.Arrays.asList(
+                controller.listarPagosPorEvento(),
+                controller.listarEventosCostosos()
+            );
+            
+            boolean exito = PdfService.generarPdfReporteMultiTabla("Reporte de Pagos y Costos", subtitulos, columnas, filas, file);
+            if (exito) JOptionPane.showMessageDialog(this, "PDF generado con éxito.");
+            else JOptionPane.showMessageDialog(this, "Error al generar el PDF.", "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    // ================== PESTAÑA 3: ESTADÍSTICAS ==================
+    private JPanel crearPanelEstadisticas() {
+        JPanel panel = new JPanel(new BorderLayout(10, 10));
+        panel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+
+        JLabel titulo = new JLabel("Estadísticas del Negocio");
+        titulo.setFont(new Font("Arial", Font.BOLD, 18));
+        panel.add(titulo, BorderLayout.NORTH);
+
+        JPanel panelAcciones = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 5));
+        JButton btnRefrescar = new JButton("Actualizar");
+        btnRefrescar.addActionListener(e -> cargarDatosEstadisticas());
+        panelAcciones.add(btnRefrescar);
+        
+        JButton btnPdf = new JButton("Exportar a PDF");
+        btnPdf.addActionListener(e -> generarPdfEstadisticas());
+        panelAcciones.add(btnPdf);
+
+        JPanel gridTablas = new JPanel(new GridLayout(2, 1, 10, 10));
+
+        // Arriba: Servicios Top
+        JPanel panelServicios = new JPanel(new BorderLayout(5, 5));
+        panelServicios.setBorder(BorderFactory.createTitledBorder("Servicios más solicitados por Tipo de Evento"));
+        modeloServiciosTop = new DefaultTableModel(new String[]{"Tipo de Evento", "Cant. Servicios Contratados"}, 0);
+        tablaServiciosTop = new JTable(modeloServiciosTop);
+        panelServicios.add(new JScrollPane(tablaServiciosTop), BorderLayout.CENTER);
+
+        // Abajo: Top 5 Eventos Más Caros
+        JPanel panelClientes = new JPanel(new BorderLayout(5, 5));
+        panelClientes.setBorder(BorderFactory.createTitledBorder("Top 5 Eventos Más Caros Históricamente"));
+        modeloClientesTop = new DefaultTableModel(new String[]{"ID Evento", "Tipo Evento", "Cliente", "Costo Total ($)"}, 0);
+        tablaClientesTop = new JTable(modeloClientesTop);
+        panelClientes.add(new JScrollPane(tablaClientesTop), BorderLayout.CENTER);
+
+        gridTablas.add(panelServicios);
+        gridTablas.add(panelClientes);
+
+        JPanel centro = new JPanel(new BorderLayout(5, 5));
+        centro.add(panelAcciones, BorderLayout.NORTH);
+        centro.add(gridTablas, BorderLayout.CENTER);
+        panel.add(centro, BorderLayout.CENTER);
+
+        return panel;
+    }
+
+    private void cargarDatosEstadisticas() {
+        modeloServiciosTop.setRowCount(0);
+        for (Object[] s : controller.listarServiciosPorTipo()) {
+            modeloServiciosTop.addRow(s);
+        }
+
+        modeloClientesTop.setRowCount(0);
+        for (Object[] c : controller.listarTop5EventosCaros()) {
+            modeloClientesTop.addRow(c);
+        }
+    }
+    
+    private void generarPdfEstadisticas() {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Guardar reporte de estadísticas");
+        fileChooser.setFileFilter(new FileNameExtensionFilter("Archivos PDF", "pdf"));
+        fileChooser.setSelectedFile(new File("Reporte_Estadisticas.pdf"));
+        
+        if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
+            File file = fileChooser.getSelectedFile();
+            if (!file.getAbsolutePath().toLowerCase().endsWith(".pdf")) file = new File(file.getAbsolutePath() + ".pdf");
+            
+            List<String> subtitulos = java.util.Arrays.asList("Servicios más solicitados", "Top 5 Eventos Más Caros");
+            List<String[]> columnas = java.util.Arrays.asList(
+                new String[]{"Tipo de Evento", "Cant. Servicios"},
+                new String[]{"ID", "Tipo", "Cliente", "Costo Total"}
+            );
+            List<List<Object[]>> filas = java.util.Arrays.asList(
+                controller.listarServiciosPorTipo(),
+                controller.listarTop5EventosCaros()
+            );
+            
+            boolean exito = PdfService.generarPdfReporteMultiTabla("Estadísticas del Negocio", subtitulos, columnas, filas, file);
+            if (exito) JOptionPane.showMessageDialog(this, "PDF generado con éxito.");
+            else JOptionPane.showMessageDialog(this, "Error al generar el PDF.", "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 }

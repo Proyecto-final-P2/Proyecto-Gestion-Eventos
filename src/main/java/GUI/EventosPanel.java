@@ -4,8 +4,8 @@ import controller.EventoController;
 import model.Cliente;
 import model.Evento;
 import model.Salon;
-import repository.ClienteDAO;
-import repository.SalonDAO;
+import controller.ClienteController;
+import controller.SalonController;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
@@ -47,8 +47,8 @@ public class EventosPanel extends JPanel {
 
     private void cargarCaches() {
         try {
-            clientesList = new ClienteDAO().listar();
-            salonesList  = new SalonDAO().listar();
+            clientesList = new ClienteController().listar();
+            salonesList  = new SalonController().listar();
         } catch (Exception ignored) {}
     }
 
@@ -221,7 +221,7 @@ public class EventosPanel extends JPanel {
             // Cargar servicios en el panel dinámico
             panelContenedorServicios.removeAll();
             try {
-                List<Object[]> servicios = new controller.ReportesControlador().getServiciosContratados(idSeleccionado);
+                List<Object[]> servicios = new controller.ReporteController().getServiciosContratados(idSeleccionado);
                 if (servicios.isEmpty()) {
                     JLabel lblVacio = new JLabel("<html><i>Ninguno</i></html>");
                     lblVacio.setForeground(Color.GRAY);

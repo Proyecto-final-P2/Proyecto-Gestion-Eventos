@@ -4,8 +4,8 @@ import controller.EventoController;
 import model.Cliente;
 import model.Evento;
 import model.Salon;
-import repository.ClienteDAO;
-import repository.SalonDAO;
+import controller.ClienteController;
+import controller.SalonController;
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
@@ -153,11 +153,11 @@ public class FormularioEvento extends JDialog {
 
     private void cargarCombos() {
         try {
-            List<Cliente> clientes = new ClienteDAO().listar();
+            List<Cliente> clientes = new ClienteController().listar();
             for (Cliente c : clientes) cbCliente.addItem(c);
             cbCliente.setSelectedIndex(-1);
 
-            List<Salon> salones = new SalonDAO().listar();
+            List<Salon> salones = new SalonController().listar();
             for (Salon s : salones) cbSalon.addItem(s);
             cbSalon.setSelectedIndex(-1);
 
