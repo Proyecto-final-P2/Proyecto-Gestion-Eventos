@@ -35,8 +35,8 @@ public class ReportesPanel extends JPanel {
     // Componentes Estadísticas
     private JTable tablaServiciosTop;
     private DefaultTableModel modeloServiciosTop;
-    private JTable tablaClientesTop;
-    private DefaultTableModel modeloClientesTop;
+    private JTable tablaSalonesTop;
+    private DefaultTableModel modeloSalonesTop;
 
     public ReportesPanel() {
         setLayout(new BorderLayout());
@@ -320,15 +320,15 @@ public class ReportesPanel extends JPanel {
         tablaServiciosTop = new JTable(modeloServiciosTop);
         panelServicios.add(new JScrollPane(tablaServiciosTop), BorderLayout.CENTER);
 
-        // Abajo: Top 5 Eventos Más Caros
-        JPanel panelClientes = new JPanel(new BorderLayout(5, 5));
-        panelClientes.setBorder(BorderFactory.createTitledBorder("Top 5 Eventos Más Caros Históricamente"));
-        modeloClientesTop = new DefaultTableModel(new String[]{"ID Evento", "Tipo Evento", "Cliente", "Costo Total ($)"}, 0);
-        tablaClientesTop = new JTable(modeloClientesTop);
-        panelClientes.add(new JScrollPane(tablaClientesTop), BorderLayout.CENTER);
+        // Abajo: Salones más solicitados
+        JPanel panelSalones = new JPanel(new BorderLayout(5, 5));
+        panelSalones.setBorder(BorderFactory.createTitledBorder("Salones más solicitados"));
+        modeloSalonesTop = new DefaultTableModel(new String[]{"ID Salón", "Nombre", "Dirección", "Cant. Eventos"}, 0);
+        tablaSalonesTop = new JTable(modeloSalonesTop);
+        panelSalones.add(new JScrollPane(tablaSalonesTop), BorderLayout.CENTER);
 
         gridTablas.add(panelServicios);
-        gridTablas.add(panelClientes);
+        gridTablas.add(panelSalones);
 
         JPanel centro = new JPanel(new BorderLayout(5, 5));
         centro.add(panelAcciones, BorderLayout.NORTH);
@@ -344,9 +344,9 @@ public class ReportesPanel extends JPanel {
             modeloServiciosTop.addRow(s);
         }
 
-        modeloClientesTop.setRowCount(0);
-        for (Object[] c : controller.listarTop5EventosCaros()) {
-            modeloClientesTop.addRow(c);
+        modeloSalonesTop.setRowCount(0);
+        for (Object[] c : controller.listarSalonesMasSolicitados()) {
+            modeloSalonesTop.addRow(c);
         }
     }
     
@@ -360,14 +360,14 @@ public class ReportesPanel extends JPanel {
             File file = fileChooser.getSelectedFile();
             if (!file.getAbsolutePath().toLowerCase().endsWith(".pdf")) file = new File(file.getAbsolutePath() + ".pdf");
             
-            List<String> subtitulos = java.util.Arrays.asList("Servicios más solicitados", "Top 5 Eventos Más Caros");
+            List<String> subtitulos = java.util.Arrays.asList("Servicios más solicitados por Tipo de Evento", "Salones más solicitados");
             List<String[]> columnas = java.util.Arrays.asList(
                 new String[]{"Tipo de Evento", "Cant. Servicios"},
-                new String[]{"ID", "Tipo", "Cliente", "Costo Total"}
+                new String[]{"ID Salón", "Nombre", "Dirección", "Cant. Eventos"}
             );
             List<List<Object[]>> filas = java.util.Arrays.asList(
                 controller.listarServiciosPorTipo(),
-                controller.listarTop5EventosCaros()
+                controller.listarSalonesMasSolicitados()
             );
             
             boolean exito = PdfService.generarPdfReporteMultiTabla("Estadísticas del Negocio", subtitulos, columnas, filas, file);

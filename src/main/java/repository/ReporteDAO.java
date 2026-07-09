@@ -59,20 +59,17 @@ public class ReporteDAO {
         return lista;
     }
 
-    // --- 4. TOP 5 EVENTOS MAS CAROS ---
-    public List<Object[]> obtenerTop5EventosCaros() throws SQLException {
+    // --- 4. SALONES MAS SOLICITADOS ---
+    public List<Object[]> obtenerSalonesMasSolicitados() throws SQLException {
         List<Object[]> lista = new ArrayList<>();
-        String sql = "SELECT e.E_ID, e.E_Tipo, c.C_NombreApellido, " +
-                     "(s.SA_Costo + COALESCE(SUM(con.CON_Precio), 0)) AS CostoTotal " +
-                     "FROM Evento e " +
-                     "JOIN Cliente c ON e.Cliente_C_ID = c.C_ID " +
-                     "JOIN Salon s ON e.Salon_SA_ID = s.SA_ID " +
-                     "LEFT JOIN Contratados con ON e.E_ID = con.Evento_E_ID " +
-                     "GROUP BY e.E_ID, e.E_Tipo, c.C_NombreApellido, s.SA_Costo " +
-                     "ORDER BY CostoTotal DESC LIMIT 5";
+        String sql = "SELECT s.SA_ID, s.SA_Nombre, s.SA_Direccion, COUNT(e.E_ID) AS CantidadEventos " +
+                     "FROM Salon s " +
+                     "LEFT JOIN Evento e ON s.SA_ID = e.Salon_SA_ID " +
+                     "GROUP BY s.SA_ID, s.SA_Nombre, s.SA_Direccion " +
+                     "ORDER BY CantidadEventos DESC";
         try (Connection con = Util.getConnection(); Statement st = con.createStatement(); ResultSet rs = st.executeQuery(sql)) {
             while (rs.next()) {
-                lista.add(new Object[]{rs.getInt(1), rs.getString(2), rs.getString(3), rs.getDouble(4)});
+                lista.add(new Object[]{rs.getInt(1), rs.getString(2), rs.getString(3), rs.getInt(4)});
             }
         }
         return lista;

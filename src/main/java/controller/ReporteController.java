@@ -41,11 +41,11 @@ public class ReporteController {
         }
     }
 
-    public List<Object[]> listarTop5EventosCaros() {
+    public List<Object[]> listarSalonesMasSolicitados() {
         try {
-            return dao.obtenerTop5EventosCaros();
+            return dao.obtenerSalonesMasSolicitados();
         } catch (SQLException e) {
-            System.err.println("Error al generar reporte de eventos caros: " + e.getMessage());
+            System.err.println("Error al generar reporte de salones mas solicitados: " + e.getMessage());
             return new ArrayList<>();
         }
     }
