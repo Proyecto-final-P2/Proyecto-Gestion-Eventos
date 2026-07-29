@@ -28,6 +28,14 @@ public class InvitadosPanel extends JPanel {
         setLayout(new BorderLayout(10, 10));
         setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
         initComponents();
+        
+        // Recargar datos automáticamente cada vez que el panel se hace visible
+        this.addComponentListener(new java.awt.event.ComponentAdapter() {
+            @Override
+            public void componentShown(java.awt.event.ComponentEvent evt) {
+                cargarComboEventos();
+            }
+        });
     }
 
     private void initComponents() {
