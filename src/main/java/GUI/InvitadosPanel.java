@@ -70,7 +70,7 @@ public class InvitadosPanel extends JPanel {
         txtBuscar.addActionListener(e -> buscar());
 
         // --- ZONA CENTRAL: tabla ---
-        String[] columnas = {"ID", "DNI", "Nombre y Apellido", "Email", "Asistencia", "Menú"};
+        String[] columnas = {"ID", "DNI", "Nombre y Apellido", "Email", "Teléfono", "Asistencia", "Menú"};
         modelo = new DefaultTableModel(columnas, 0) {
             @Override public boolean isCellEditable(int r, int c) { return false; }
         };
@@ -151,6 +151,7 @@ public class InvitadosPanel extends JPanel {
                 inv.getDni(),
                 inv.getNombreApellido(),
                 inv.getEmail(),
+                inv.getTelefono(),
                 inv.getAsistencia(),
                 inv.getPreferenciaMenu()
             });
@@ -192,8 +193,9 @@ public class InvitadosPanel extends JPanel {
         inv.setDni(Integer.parseInt(modelo.getValueAt(fila, 1).toString()));
         inv.setNombreApellido(modelo.getValueAt(fila, 2).toString());
         inv.setEmail(modelo.getValueAt(fila, 3).toString());
-        inv.setAsistencia(modelo.getValueAt(fila, 4).toString());
-        inv.setPreferenciaMenu(modelo.getValueAt(fila, 5).toString());
+        inv.setTelefono(modelo.getValueAt(fila, 4) != null ? modelo.getValueAt(fila, 4).toString() : "");
+        inv.setAsistencia(modelo.getValueAt(fila, 5).toString());
+        inv.setPreferenciaMenu(modelo.getValueAt(fila, 6).toString());
         inv.setEventoId(getEventoIdSeleccionado());
 
         Window ventana = SwingUtilities.getWindowAncestor(this);
@@ -241,6 +243,7 @@ public class InvitadosPanel extends JPanel {
                 inv.getDni(),
                 inv.getNombreApellido(),
                 inv.getEmail(),
+                inv.getTelefono(),
                 inv.getAsistencia(),
                 inv.getPreferenciaMenu()
             });

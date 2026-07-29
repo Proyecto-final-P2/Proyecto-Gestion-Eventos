@@ -4,6 +4,11 @@ SET FOREIGN_KEY_CHECKS = 0;
 ALTER TABLE Evento MODIFY E_ID INT NOT NULL AUTO_INCREMENT;
 SET FOREIGN_KEY_CHECKS = 1;
 
+-- Asegurar columnas correctas en la tabla Pago (Nota: MySQL no soporta IF NOT EXISTS en ALTER TABLE, se comentan ya que las columnas ya existen en init.sql y TPBD_gestion_de_eventos.sql)
+-- ALTER TABLE Pago ADD COLUMN IF NOT EXISTS P_Pagador VARCHAR(100) NULL;
+-- ALTER TABLE Pago ADD COLUMN IF NOT EXISTS P_MetodoPago VARCHAR(50) NOT NULL DEFAULT 'Efectivo';
+-- ALTER TABLE Pago ADD COLUMN IF NOT EXISTS P_FechaPago DATE NOT NULL DEFAULT (CURRENT_DATE);
+
 -- Tabla Administrador
 CREATE TABLE IF NOT EXISTS Administrador (
   A_ID INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
