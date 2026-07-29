@@ -82,7 +82,11 @@ public class EventoController {
             dao.eliminar(id);
             return true;
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(null, "Error al eliminar evento: " + ex.getMessage());
+            if (ex.getMessage().contains("foreign key constraint")) {
+                JOptionPane.showMessageDialog(null, "No se puede eliminar este evento porque tiene pagos, invitados o servicios asociados.\nPor favor, elimine primero todos los registros vinculados a este evento.", "Error al eliminar", JOptionPane.ERROR_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(null, "Error al eliminar evento: " + ex.getMessage());
+            }
             return false;
         }
     }

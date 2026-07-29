@@ -31,7 +31,7 @@ public class ClienteController {
                 JOptionPane.showMessageDialog(null, "Error: El DNI ya está registrado.", "Error", JOptionPane.ERROR_MESSAGE);
                 return false;
             }
-            if (dao.buscarPorEmail(c.getEmail()) != null) {
+            if (!c.getEmail().trim().isEmpty() && dao.buscarPorEmail(c.getEmail()) != null) {
                 JOptionPane.showMessageDialog(null, "Error: El Email ya está registrado.", "Error", JOptionPane.ERROR_MESSAGE);
                 return false;
             }
@@ -51,7 +51,16 @@ public class ClienteController {
 
     // borra un cliente
     public boolean eliminar(int id) {
-        try { dao.eliminar(id); return true; }
-        catch (Exception ex) { JOptionPane.showMessageDialog(null, "Error: " + ex.getMessage()); return false; }
+        try { 
+            dao.eliminar(id); 
+            return true; 
+        } catch (Exception ex) { 
+            if (ex.getMessage().contains("foreign key constraint")) {
+                JOptionPane.showMessageDialog(null, "No se puede eliminar este cliente porque tiene eventos asociados.\nPor favor, elimine primero los eventos de este cliente.", "Error al eliminar", JOptionPane.ERROR_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(null, "Error: " + ex.getMessage()); 
+            }
+            return false; 
+        }
     }
 }

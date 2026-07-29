@@ -148,7 +148,7 @@ public class ClientesPanel extends JPanel {
             return;
         }
         
-        int confirm = JOptionPane.showConfirmDialog(this, "¿Está seguro que desea eliminar el registro seleccionado?", "Confirmar Eliminación", JOptionPane.YES_NO_OPTION);
+        int confirm = JOptionPane.showConfirmDialog(this, "¿Está seguro que desea eliminar este Cliente?\n\n¡ATENCIÓN! Se eliminarán automáticamente todos sus Eventos, Pagos e Invitados asociados.", "Confirmar Eliminación", JOptionPane.YES_NO_OPTION);
         if (confirm == JOptionPane.YES_OPTION) {
             int id = (int) modeloTabla.getValueAt(fila, 0);
             if (controller.eliminar(id)) {

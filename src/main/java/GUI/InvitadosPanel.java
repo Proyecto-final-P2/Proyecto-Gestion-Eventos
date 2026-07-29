@@ -113,6 +113,23 @@ public class InvitadosPanel extends JPanel {
         if (eventos != null && !eventos.isEmpty()) {
             cargarTabla(eventos.get(0).getId());
         }
+
+        // recargar eventos al entrar a la pestaña para ver los eventos recién creados
+        this.addComponentListener(new java.awt.event.ComponentAdapter() {
+            @Override
+            public void componentShown(java.awt.event.ComponentEvent evt) {
+                int selectedId = getEventoIdSeleccionado();
+                cargarComboEventos();
+                if (selectedId >= 0 && eventos != null) {
+                    for (int i = 0; i < eventos.size(); i++) {
+                        if (eventos.get(i).getId() == selectedId) {
+                            comboEventos.setSelectedIndex(i);
+                            break;
+                        }
+                    }
+                }
+            }
+        });
     }
 
     // llena el combo con todos los eventos de la BD

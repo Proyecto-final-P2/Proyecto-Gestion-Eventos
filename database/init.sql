@@ -2,6 +2,7 @@
 DROP DATABASE IF EXISTS salonDeEventos;
 CREATE DATABASE IF NOT EXISTS salonDeEventos CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE salonDeEventos;
+SET NAMES utf8mb4;
 
 -- Tabla Salon
 CREATE TABLE Salon (
@@ -34,7 +35,7 @@ CREATE TABLE Evento (
   E_Estado ENUM('confirmado', 'pendiente de confirmacion', 'cancelado') NOT NULL,
   Cliente_C_ID INT NOT NULL,
   Salon_SA_ID INT NOT NULL,
-  FOREIGN KEY (Cliente_C_ID) REFERENCES Cliente (C_ID),
+  FOREIGN KEY (Cliente_C_ID) REFERENCES Cliente (C_ID) ON DELETE CASCADE,
   FOREIGN KEY (Salon_SA_ID) REFERENCES Salon (SA_ID)
 );
 
@@ -46,7 +47,7 @@ CREATE TABLE Pago (
   P_Pagador VARCHAR(100) NULL,
   P_MetodoPago VARCHAR(50) NOT NULL DEFAULT 'Efectivo',
   P_FechaPago DATE NOT NULL DEFAULT (CURRENT_DATE),
-  FOREIGN KEY (Evento_E_ID) REFERENCES Evento (E_ID)
+  FOREIGN KEY (Evento_E_ID) REFERENCES Evento (E_ID) ON DELETE CASCADE
 );
 
 -- Tabla Servicios
@@ -73,8 +74,8 @@ CREATE TABLE Asiste (
   Invitado_IN_ID INT NOT NULL,
   Evento_E_ID INT NOT NULL,
   PRIMARY KEY (Invitado_IN_ID, Evento_E_ID),
-  FOREIGN KEY (Invitado_IN_ID) REFERENCES Invitado (IN_ID),
-  FOREIGN KEY (Evento_E_ID) REFERENCES Evento (E_ID)
+  FOREIGN KEY (Invitado_IN_ID) REFERENCES Invitado (IN_ID) ON DELETE CASCADE,
+  FOREIGN KEY (Evento_E_ID) REFERENCES Evento (E_ID) ON DELETE CASCADE
 );
 
 -- Tabla Contratados
@@ -83,7 +84,7 @@ CREATE TABLE Contratados (
   Servicios_SE_ID INT NOT NULL,
   CON_Precio DECIMAL(10,2) NOT NULL,
   PRIMARY KEY (Evento_E_ID, Servicios_SE_ID),
-  FOREIGN KEY (Evento_E_ID) REFERENCES Evento (E_ID),
+  FOREIGN KEY (Evento_E_ID) REFERENCES Evento (E_ID) ON DELETE CASCADE,
   FOREIGN KEY (Servicios_SE_ID) REFERENCES Servicios (SE_ID)
 );
 
