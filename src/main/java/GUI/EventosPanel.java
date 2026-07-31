@@ -4,8 +4,8 @@ import controller.EventoController;
 import model.Cliente;
 import model.Evento;
 import model.Salon;
-import repository.ClienteDAO;
-import repository.SalonDAO;
+import controller.ClienteController;
+import controller.SalonController;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
@@ -43,12 +43,20 @@ public class EventosPanel extends JPanel {
         cargarCaches();
         initComponents();
         cargarTabla();
+        // Recargar datos automáticamente cada vez que el panel se hace visible
+        this.addComponentListener(new java.awt.event.ComponentAdapter() {
+            @Override
+            public void componentShown(java.awt.event.ComponentEvent evt) {
+                cargarTabla();
+            }
+        });
+
     }
 
     private void cargarCaches() {
         try {
-            clientesList = new ClienteDAO().listar();
-            salonesList  = new SalonDAO().listar();
+            clientesList = new ClienteController().listar();
+            salonesList  = new SalonController().listar();
         } catch (Exception ignored) {}
     }
 
@@ -221,7 +229,7 @@ public class EventosPanel extends JPanel {
             // Cargar servicios en el panel dinámico
             panelContenedorServicios.removeAll();
             try {
-                List<Object[]> servicios = new controller.ReportesControlador().getServiciosContratados(idSeleccionado);
+                List<Object[]> servicios = new controller.ReporteController().getServiciosContratados(idSeleccionado);
                 if (servicios.isEmpty()) {
                     JLabel lblVacio = new JLabel("<html><i>Ninguno</i></html>");
                     lblVacio.setForeground(Color.GRAY);
@@ -274,6 +282,7 @@ public class EventosPanel extends JPanel {
     }
 
     private void cargarTabla() {
+        cargarCaches();
         modeloTabla.setRowCount(0);
         eventosActuales = controller.listar();
         llenarFilas(eventosActuales);
@@ -283,6 +292,7 @@ public class EventosPanel extends JPanel {
     private void buscar() {
         String texto = txtBuscar.getText().trim();
         if (texto.isEmpty()) { cargarTabla(); return; }
+        cargarCaches();
         modeloTabla.setRowCount(0);
         eventosActuales = controller.buscar(texto);
         llenarFilas(eventosActuales);
@@ -338,7 +348,7 @@ public class EventosPanel extends JPanel {
             return;
         }
         
-        int confirm = JOptionPane.showConfirmDialog(this, "¿Está seguro que desea eliminar el registro seleccionado?", "Confirmar Eliminación", JOptionPane.YES_NO_OPTION);
+        int confirm = JOptionPane.showConfirmDialog(this, "¿Está seguro que desea eliminar este Evento?\n\n¡ATENCIÓN! Se eliminarán automáticamente todos sus Pagos, Invitados y Servicios contratados.", "Confirmar Eliminación", JOptionPane.YES_NO_OPTION);
         if (confirm == JOptionPane.YES_OPTION) {
             int id = (int) modeloTabla.getValueAt(fila, 0);
             if (controller.eliminar(id)) {

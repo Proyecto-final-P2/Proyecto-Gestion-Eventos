@@ -23,6 +23,7 @@ public class GestorDeEventos {
             System.out.println("Error al iniciar la aplicación: " + e.getMessage());
             e.printStackTrace(); // mostrar el stack trace completo del error
         }
+        }
 
         // abre la primera pantalla del programa (Login) y la muestra
         SwingUtilities.invokeLater(() -> new Login().setVisible(true));

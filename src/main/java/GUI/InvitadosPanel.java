@@ -28,6 +28,14 @@ public class InvitadosPanel extends JPanel {
         setLayout(new BorderLayout(10, 10));
         setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
         initComponents();
+        
+        // Recargar datos automáticamente cada vez que el panel se hace visible
+        this.addComponentListener(new java.awt.event.ComponentAdapter() {
+            @Override
+            public void componentShown(java.awt.event.ComponentEvent evt) {
+                cargarComboEventos();
+            }
+        });
     }
 
     private void initComponents() {
@@ -70,7 +78,7 @@ public class InvitadosPanel extends JPanel {
         txtBuscar.addActionListener(e -> buscar());
 
         // --- ZONA CENTRAL: tabla ---
-        String[] columnas = {"ID", "DNI", "Nombre y Apellido", "Email", "Asistencia", "Menú"};
+        String[] columnas = {"ID", "DNI", "Nombre y Apellido", "Email", "Teléfono", "Asistencia", "Menú"};
         modelo = new DefaultTableModel(columnas, 0) {
             @Override public boolean isCellEditable(int r, int c) { return false; }
         };
@@ -113,6 +121,23 @@ public class InvitadosPanel extends JPanel {
         if (eventos != null && !eventos.isEmpty()) {
             cargarTabla(eventos.get(0).getId());
         }
+
+        // recargar eventos al entrar a la pestaña para ver los eventos recién creados
+        this.addComponentListener(new java.awt.event.ComponentAdapter() {
+            @Override
+            public void componentShown(java.awt.event.ComponentEvent evt) {
+                int selectedId = getEventoIdSeleccionado();
+                cargarComboEventos();
+                if (selectedId >= 0 && eventos != null) {
+                    for (int i = 0; i < eventos.size(); i++) {
+                        if (eventos.get(i).getId() == selectedId) {
+                            comboEventos.setSelectedIndex(i);
+                            break;
+                        }
+                    }
+                }
+            }
+        });
     }
 
     // llena el combo con todos los eventos de la BD
@@ -134,6 +159,7 @@ public class InvitadosPanel extends JPanel {
                 inv.getDni(),
                 inv.getNombreApellido(),
                 inv.getEmail(),
+                inv.getTelefono(),
                 inv.getAsistencia(),
                 inv.getPreferenciaMenu()
             });
@@ -175,8 +201,9 @@ public class InvitadosPanel extends JPanel {
         inv.setDni(Integer.parseInt(modelo.getValueAt(fila, 1).toString()));
         inv.setNombreApellido(modelo.getValueAt(fila, 2).toString());
         inv.setEmail(modelo.getValueAt(fila, 3).toString());
-        inv.setAsistencia(modelo.getValueAt(fila, 4).toString());
-        inv.setPreferenciaMenu(modelo.getValueAt(fila, 5).toString());
+        inv.setTelefono(modelo.getValueAt(fila, 4) != null ? modelo.getValueAt(fila, 4).toString() : "");
+        inv.setAsistencia(modelo.getValueAt(fila, 5).toString());
+        inv.setPreferenciaMenu(modelo.getValueAt(fila, 6).toString());
         inv.setEventoId(getEventoIdSeleccionado());
 
         Window ventana = SwingUtilities.getWindowAncestor(this);
@@ -224,6 +251,7 @@ public class InvitadosPanel extends JPanel {
                 inv.getDni(),
                 inv.getNombreApellido(),
                 inv.getEmail(),
+                inv.getTelefono(),
                 inv.getAsistencia(),
                 inv.getPreferenciaMenu()
             });

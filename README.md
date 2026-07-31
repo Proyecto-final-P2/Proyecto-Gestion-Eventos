@@ -130,8 +130,7 @@ git push origin feature/panel-eventos
 
 **Credenciales locales (Docker):**
 ```
-Host:     localhost
-Puerto:   3306
+
 BD:       salonDeEventos
 Usuario:  admin
 Password: admin123
