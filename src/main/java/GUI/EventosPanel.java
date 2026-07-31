@@ -13,6 +13,7 @@ import java.util.List;
 
 /**
  * Panel de gestión de Eventos.
+ * Implementa un patrón Maestro-Detalle con Panel Lateral de Detalles.
  */
 public class EventosPanel extends JPanel {
 
@@ -22,9 +23,19 @@ public class EventosPanel extends JPanel {
     private DefaultTableModel modeloTabla;
     private JTextField txtBuscar;
 
+    // Etiquetas para el panel lateral de detalles
+    private JLabel lblDetalleHoraInicio;
+    private JLabel lblDetalleHoraFin;
+    private JLabel lblDetalleInvitados;
+    private JLabel lblDetalleCostoTotal;
+    
+    private JPanel panelContenedorServicios;
+
     // Caché de clientes y salones para mostrar sus nombres en la tabla
     private List<Cliente> clientesList;
     private List<Salon> salonesList;
+    // Caché de los eventos mostrados para poder acceder rápidamente a todos sus datos
+    private List<Evento> eventosActuales;
 
     public EventosPanel() {
         setLayout(new BorderLayout(10, 10));
@@ -66,7 +77,7 @@ public class EventosPanel extends JPanel {
         add(titulo, BorderLayout.NORTH);
 
         // --- TABLA (centro) ---
-        String[] columnas = {"ID", "Tipo", "Fecha", "Horario", "Invitados", "Estado", "Costo", "Cliente", "Salón"};
+        String[] columnas = {"ID", "Fecha", "Tipo", "Cliente", "Salón", "Estado", "Saldo Pendiente"};
         modeloTabla = new DefaultTableModel(columnas, 0) {
             @Override public boolean isCellEditable(int r, int c) { return false; }
         };
@@ -77,6 +88,13 @@ public class EventosPanel extends JPanel {
         tabla.getColumnModel().getColumn(0).setMinWidth(0);
         tabla.getColumnModel().getColumn(0).setMaxWidth(0);
         tabla.getColumnModel().getColumn(0).setWidth(0);
+
+        // Evento de selección en la tabla para actualizar el Panel Lateral
+        tabla.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                actualizarPanelLateral();
+            }
+        });
 
         JScrollPane scroll = new JScrollPane(tabla);
 
@@ -99,6 +117,10 @@ public class EventosPanel extends JPanel {
         centro.add(scroll, BorderLayout.CENTER);
         add(centro, BorderLayout.CENTER);
 
+        // --- PANEL LATERAL DE DETALLES (Este) ---
+        JPanel panelDerecho = crearPanelDetalles();
+        add(panelDerecho, BorderLayout.EAST);
+
         // --- BOTONES (sur) ---
         JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.LEFT));
 
@@ -119,44 +141,166 @@ public class EventosPanel extends JPanel {
         btnEliminar.addActionListener(e  -> eliminarSeleccionado());
     }
 
+    private JPanel crearPanelDetalles() {
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setPreferredSize(new Dimension(190, 0));
+        panel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createTitledBorder("Detalles Extra"),
+                BorderFactory.createEmptyBorder(10, 10, 10, 10)
+        ));
+        panel.setBackground(new Color(245, 245, 245));
+
+        lblDetalleHoraInicio = new JLabel("-");
+        lblDetalleHoraFin = new JLabel("-");
+        lblDetalleInvitados = new JLabel("-");
+        lblDetalleCostoTotal = new JLabel("-");
+
+        agregarFilaDetalle(panel, "Hora Inicio:", lblDetalleHoraInicio);
+        panel.add(Box.createRigidArea(new Dimension(0, 10)));
+        agregarFilaDetalle(panel, "Hora Fin:", lblDetalleHoraFin);
+        panel.add(Box.createRigidArea(new Dimension(0, 10)));
+        agregarFilaDetalle(panel, "Invitados:", lblDetalleInvitados);
+        panel.add(Box.createRigidArea(new Dimension(0, 10)));
+        
+        // Separador para Costo Total
+        panel.add(new JSeparator(SwingConstants.HORIZONTAL));
+        panel.add(Box.createRigidArea(new Dimension(0, 10)));
+        
+        agregarFilaDetalle(panel, "Costo Total:", lblDetalleCostoTotal);
+        lblDetalleCostoTotal.setFont(lblDetalleCostoTotal.getFont().deriveFont(Font.BOLD));
+        
+        panel.add(Box.createRigidArea(new Dimension(0, 15)));
+        
+        // Lista de servicios (en vez de tabla, usamos un panel con scroll)
+        JLabel lblServicios = new JLabel("Servicios Contratados:");
+        lblServicios.setForeground(Color.GRAY);
+        panel.add(lblServicios);
+        panel.add(Box.createRigidArea(new Dimension(0, 5)));
+        
+        panelContenedorServicios = new JPanel();
+        panelContenedorServicios.setLayout(new BoxLayout(panelContenedorServicios, BoxLayout.Y_AXIS));
+        panelContenedorServicios.setBackground(new Color(245, 245, 245));
+        
+        JScrollPane scrollServicios = new JScrollPane(panelContenedorServicios);
+        scrollServicios.setPreferredSize(new Dimension(170, 150));
+        scrollServicios.setBorder(BorderFactory.createEmptyBorder()); // Sin borde para que se vea más limpio
+        scrollServicios.getVerticalScrollBar().setUnitIncrement(16);
+        panel.add(scrollServicios);
+
+        return panel;
+    }
+
+    private void agregarFilaDetalle(JPanel panel, String titulo, JLabel valorLabel) {
+        JLabel lblTitulo = new JLabel(titulo);
+        lblTitulo.setForeground(Color.GRAY);
+        panel.add(lblTitulo);
+        panel.add(Box.createRigidArea(new Dimension(0, 2)));
+        panel.add(valorLabel);
+    }
+
+    private void actualizarPanelLateral() {
+        int fila = tabla.getSelectedRow();
+        if (fila < 0 || eventosActuales == null || fila >= eventosActuales.size()) {
+            // Limpiar si no hay selección
+            lblDetalleHoraInicio.setText("-");
+            lblDetalleHoraFin.setText("-");
+            lblDetalleInvitados.setText("-");
+            lblDetalleCostoTotal.setText("-");
+            return;
+        }
+
+        int idSeleccionado = (int) modeloTabla.getValueAt(fila, 0);
+        Evento evt = buscarEventoEnCache(idSeleccionado);
+        if (evt != null) {
+            lblDetalleHoraInicio.setText(evt.getHoraInicio().toString());
+            lblDetalleHoraFin.setText(evt.getHoraFin().toString());
+            lblDetalleInvitados.setText(String.valueOf(evt.getCantInvitados()));
+            lblDetalleCostoTotal.setText("$ " + evt.getCostoTotal());
+            
+            // Cargar servicios en el panel dinámico
+            panelContenedorServicios.removeAll();
+            try {
+                List<Object[]> servicios = new controller.ReportesControlador().getServiciosContratados(idSeleccionado);
+                if (servicios.isEmpty()) {
+                    JLabel lblVacio = new JLabel("<html><i>Ninguno</i></html>");
+                    lblVacio.setForeground(Color.GRAY);
+                    panelContenedorServicios.add(lblVacio);
+                } else {
+                    for (int i = 0; i < servicios.size(); i++) {
+                        Object[] srv = servicios.get(i);
+                        String tipo = srv[0].toString();
+                        String prov = srv[1].toString();
+                        String precio = String.format("%.2f", (Double) srv[2]);
+                        
+                        String html = "<html><p style='margin:0; padding-bottom:5px;'>"
+                                    + "<b>Servicio:</b> " + tipo + "<br>"
+                                    + "<b>Proveedor:</b> " + prov + "<br>"
+                                    + "<b>Costo:</b> $" + precio 
+                                    + "</p></html>";
+                                    
+                        JLabel lblCard = new JLabel(html);
+                        lblCard.setFont(new Font("Arial", Font.PLAIN, 11));
+                        
+                        // Añadir separador abajo de cada uno, excepto el último
+                        if (i < servicios.size() - 1) {
+                            lblCard.setBorder(BorderFactory.createCompoundBorder(
+                                BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(200, 200, 200)),
+                                BorderFactory.createEmptyBorder(0, 0, 5, 0)
+                            ));
+                        } else {
+                            lblCard.setBorder(BorderFactory.createEmptyBorder(0, 0, 5, 0));
+                        }
+                        
+                        panelContenedorServicios.add(lblCard);
+                        panelContenedorServicios.add(Box.createRigidArea(new Dimension(0, 5)));
+                    }
+                }
+            } catch (Exception ex) {
+                // Ignore
+            }
+            panelContenedorServicios.revalidate();
+            panelContenedorServicios.repaint();
+        }
+    }
+
+    private Evento buscarEventoEnCache(int id) {
+        if (eventosActuales != null) {
+            for (Evento e : eventosActuales) {
+                if (e.getId() == id) return e;
+            }
+        }
+        return null;
+    }
+
     private void cargarTabla() {
         modeloTabla.setRowCount(0);
-        List<Evento> eventos = controller.listar();
-        for (Evento e : eventos) {
-            Cliente c = buscarClienteEnCache(e.getClienteId());
-            Salon s = buscarSalonEnCache(e.getSalonId());
-            modeloTabla.addRow(new Object[]{
-                e.getId(),
-                e.getTipo(),
-                e.getFecha().toString(),
-                e.getHorario().toString(),
-                e.getCantInvitados(),
-                e.getEstado(),
-                e.getCostoFinal(),
-                c != null ? c : "ID: " + e.getClienteId(),
-                s != null ? s : "ID: " + e.getSalonId()
-            });
-        }
+        eventosActuales = controller.listar();
+        llenarFilas(eventosActuales);
+        actualizarPanelLateral(); // Limpia panel al recargar
     }
 
     private void buscar() {
         String texto = txtBuscar.getText().trim();
         if (texto.isEmpty()) { cargarTabla(); return; }
         modeloTabla.setRowCount(0);
-        List<Evento> resultados = controller.buscar(texto);
-        for (Evento e : resultados) {
+        eventosActuales = controller.buscar(texto);
+        llenarFilas(eventosActuales);
+        actualizarPanelLateral();
+    }
+
+    private void llenarFilas(List<Evento> lista) {
+        for (Evento e : lista) {
             Cliente c = buscarClienteEnCache(e.getClienteId());
             Salon s = buscarSalonEnCache(e.getSalonId());
             modeloTabla.addRow(new Object[]{
                 e.getId(),
-                e.getTipo(),
                 e.getFecha().toString(),
-                e.getHorario().toString(),
-                e.getCantInvitados(),
+                e.getTipo(),
+                c != null ? c.getNombreApellido() : "ID: " + e.getClienteId(),
+                s != null ? s.getNombre() : "ID: " + e.getSalonId(),
                 e.getEstado(),
-                e.getCostoFinal(),
-                c != null ? c : "ID: " + e.getClienteId(),
-                s != null ? s : "ID: " + e.getSalonId()
+                "$ " + e.getSaldoPendiente()
             });
         }
     }
@@ -176,20 +320,9 @@ public class EventosPanel extends JPanel {
             return;
         }
 
-        Evento e = new Evento();
-        e.setId((int) modeloTabla.getValueAt(fila, 0));
-        e.setTipo(modeloTabla.getValueAt(fila, 1).toString());
-        e.setFecha(java.time.LocalDate.parse(modeloTabla.getValueAt(fila, 2).toString()));
-        e.setHorario(java.time.LocalTime.parse(modeloTabla.getValueAt(fila, 3).toString()));
-        e.setCantInvitados(Integer.parseInt(modeloTabla.getValueAt(fila, 4).toString()));
-        e.setEstado(modeloTabla.getValueAt(fila, 5).toString());
-        e.setCostoFinal(Double.parseDouble(modeloTabla.getValueAt(fila, 6).toString()));
-
-        Object valCliente = modeloTabla.getValueAt(fila, 7);
-        if (valCliente instanceof Cliente) e.setClienteId(((Cliente) valCliente).getId());
-
-        Object valSalon = modeloTabla.getValueAt(fila, 8);
-        if (valSalon instanceof Salon) e.setSalonId(((Salon) valSalon).getId());
+        int idSeleccionado = (int) modeloTabla.getValueAt(fila, 0);
+        Evento e = buscarEventoEnCache(idSeleccionado);
+        if (e == null) return;
 
         Window ventana = SwingUtilities.getWindowAncestor(this);
         JFrame frame = ventana instanceof JFrame ? (JFrame) ventana : null;

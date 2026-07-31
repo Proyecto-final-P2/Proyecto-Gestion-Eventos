@@ -33,6 +33,16 @@ public class ServicioController {
         }
     }
 
+    // Obtiene los IDs de los servicios de un evento
+    public List<Integer> obtenerIdsServiciosPorEvento(int eventoId) {
+        try {
+            return dao.obtenerIdsServiciosPorEvento(eventoId);
+        } catch (SQLException e) {
+            System.err.println("Error al obtener servicios del evento: " + e.getMessage());
+            return new ArrayList<>();
+        }
+    }
+
     // Guarda y devuelve true si fue un éxito
     public boolean guardarServicio(Servicio s) {
         try {
