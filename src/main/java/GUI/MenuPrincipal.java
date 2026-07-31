@@ -61,8 +61,8 @@ public class MenuPrincipal extends JFrame {
         });
         sidebar.add(btnSalir);
 
-        // Panel de contenido central
-        panelContenido = new JPanel(new BorderLayout());
+        // Panel de contenido central (CardLayout en lugar de BorderLayout)
+        panelContenido = new JPanel(new CardLayout());
         panelContenido.setBackground(Color.WHITE);
 
         JPanel panelBienvenida = new JPanel(new GridBagLayout());
@@ -86,7 +86,17 @@ public class MenuPrincipal extends JFrame {
         lblSub.setForeground(Color.GRAY);
         panelBienvenida.add(lblSub, gbcCent);
 
-        panelContenido.add(panelBienvenida, BorderLayout.CENTER);
+        // Agregamos todas las "cartas" (paneles) al CardLayout UNA sola vez
+        panelContenido.add(panelBienvenida, "Bienvenida");
+        panelContenido.add(new ClientesPanel(), "Clientes");
+        panelContenido.add(new EventosPanel(), "Eventos");
+        panelContenido.add(new SalonesPanel(), "Salones");
+        panelContenido.add(new ReservasPanel(), "Reservas");
+        panelContenido.add(new ServiciosPanel(), "Servicios");
+        panelContenido.add(new InvitadosPanel(), "Invitados");
+        panelContenido.add(new PagosPanel(), "Pagos");
+        panelContenido.add(new ReportesPanel(), "Reportes");
+        panelContenido.add(new AdministradoresPanel(), "Administradores");
 
         // Layout principal
         setLayout(new BorderLayout());
@@ -108,24 +118,9 @@ public class MenuPrincipal extends JFrame {
         return btn;
     }
 
-    // segun el boton que toques, reemplaza el centro de la pantalla con ese panel
+    // segun el boton que toques, trae la "carta" (panel) correspondiente al frente
     private void cargarPanel(String seccion) {
-        panelContenido.removeAll();
-        JPanel panel;
-        switch (seccion) {
-            case "Clientes"    -> panel = new ClientesPanel();
-            case "Eventos"     -> panel = new EventosPanel();
-            case "Salones"     -> panel = new SalonesPanel();
-            case "Reservas"    -> panel = new ReservasPanel();
-            case "Servicios"   -> panel = new ServiciosPanel();
-            case "Invitados"   -> panel = new InvitadosPanel();
-            case "Pagos"       -> panel = new PagosPanel();
-            case "Reportes"    -> panel = new ReportesPanel();
-            case "Administradores" -> panel = new AdministradoresPanel();
-            default            -> panel = new JPanel();
-        }
-        panelContenido.add(panel, BorderLayout.CENTER);
-        panelContenido.revalidate();
-        panelContenido.repaint();
+        CardLayout cl = (CardLayout) panelContenido.getLayout();
+        cl.show(panelContenido, seccion);
     }
 }
