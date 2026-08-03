@@ -40,7 +40,7 @@ decisión explícita y no como descuido.
 
 Por la misma razón existe un admin "de respaldo" hardcodeado en
 `LoginController` (`admin@admin.com` / `admin123`) además del que inserta
-`update_db.sql`. Mantenerlo evita que el sistema quede inaccesible si la fila
+`init.sql`. Mantenerlo evita que el sistema quede inaccesible si la fila
 de `Administrador` se borra por error; la contrapartida es que ese acceso no se
 puede deshabilitar desde la UI.
 
@@ -70,13 +70,12 @@ desincronización entre el código Java y el esquema SQL:
 | # | Problema | Síntoma real | Causa | Fix |
 |---|----------|---------------|-------|-----|
 | 1 | `database/TPBD_gestion_de_eventos.sql` duplicaba las tablas de `init.sql` | Al levantar el contenedor desde cero, `init.sql` fallaba con `Table 'Salon' already exists` y abortaba a mitad de camino (sin cargar los datos de ejemplo) | Docker ejecuta los `.sql` de `/database` en orden alfabético; el archivo legado se ejecutaba primero | Se eliminó `TPBD_gestion_de_eventos.sql` del repositorio |
-| 2 | La vista `VistasEventosConfirmados` (usada por Reportes) solo estaba definida en ese mismo archivo legado | Al borrar el archivo, el panel de Reportes rompía con `Table 'VistasEventosConfirmados' doesn't exist` | La vista nunca se migró a `init.sql`/`update_db.sql` | Se agregó la `CREATE VIEW` a `update_db.sql` |
-| 3 | `Cliente.C_ID`, `Salon.SA_ID` y `Evento.E_ID` no tenían `AUTO_INCREMENT` | Dar de alta un cliente, salón o evento desde la app fallaba con `Field 'X_ID' doesn't have a default value` | Los DAO insertan sin especificar el ID, asumiendo autoincremento | `ALTER TABLE ... MODIFY ... AUTO_INCREMENT` en `update_db.sql` |
-| 4 | La tabla `Pago` no tenía las columnas `P_Pagador`, `P_MetodoPago`, `P_FechaPago`, y `P_ID` tampoco era autoincremental | Registrar un pago fallaba con `Unknown column 'P_Pagador' in 'INSERT INTO'` | `PagoDAO` se actualizó para guardar más datos del pago, pero el script SQL no se actualizó en paralelo | Se agregaron las columnas faltantes y el autoincremento en `update_db.sql` |
+| 2 | La vista `VistasEventosConfirmados` (usada por Reportes) solo estaba definida en ese mismo archivo legado | Al borrar el archivo, el panel de Reportes rompía con `Table 'VistasEventosConfirmados' doesn't exist` | La vista nunca se migró a `init.sql` | Se consolidaron las vistas directamente en `init.sql` |
+| 3 | `Cliente.C_ID`, `Salon.SA_ID` y `Evento.E_ID` no tenían `AUTO_INCREMENT` | Dar de alta un cliente, salón o evento desde la app fallaba con `Field 'X_ID' doesn't have a default value` | Los DAO insertan sin especificar el ID, asumiendo autoincremento | Se definió `AUTO_INCREMENT` en las tablas de `init.sql` |
+| 4 | La tabla `Pago` no tenía las columnas `P_Pagador`, `P_MetodoPago`, `P_FechaPago`, y `P_ID` tampoco era autoincremental | Registrar un pago fallaba con `Unknown column 'P_Pagador' in 'INSERT INTO'` | `PagoDAO` se actualizó para guardar más datos del pago, pero el script SQL no se actualizó en paralelo | Se agregaron las columnas y el autoincremento directamente en `init.sql` |
 
-Los cuatro fixes están aplicados en `database/update_db.sql` y fueron
-verificados ejecutando `init.sql` + `update_db.sql` desde una base vacía y
-reproduciendo el INSERT exacto que genera cada DAO afectado.
+Todos los fixes y esquemas están consolidados en `database/init.sql` de forma limpia y fueron
+verificados para que coincidan exactamente con lo que espera cada DAO de la aplicación.
 
 
 
