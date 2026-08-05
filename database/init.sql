@@ -4,6 +4,10 @@ CREATE DATABASE IF NOT EXISTS salonDeEventos CHARACTER SET utf8mb4 COLLATE utf8m
 USE salonDeEventos;
 SET NAMES utf8mb4;
 
+-- ==========================================================
+-- TABLAS
+-- ==========================================================
+
 -- Tabla Salon
 CREATE TABLE Salon (
   SA_ID INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -22,6 +26,14 @@ CREATE TABLE Cliente (
   C_NombreApellido VARCHAR(45) NOT NULL,
   C_Email VARCHAR(255) NOT NULL,
   C_Telefono VARCHAR(15) NOT NULL
+);
+
+-- Tabla Administrador
+CREATE TABLE Administrador (
+  A_ID INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  A_NombreApellido VARCHAR(45) NOT NULL,
+  A_Email VARCHAR(255) NOT NULL,
+  A_Password VARCHAR(255) NOT NULL
 );
 
 -- Tabla Evento (Fusionada con Reserva)
@@ -88,6 +100,10 @@ CREATE TABLE Contratados (
   FOREIGN KEY (Servicios_SE_ID) REFERENCES Servicios (SE_ID)
 );
 
+-- ==========================================================
+-- DATOS INICIALES
+-- ==========================================================
+
 -- Datos para la tabla Salon
 INSERT INTO Salon (SA_ID, SA_Direccion, SA_Nombre, SA_Capacidad, SA_CantSillas, SA_CantMesas, SA_Costo)
 VALUES 
@@ -105,6 +121,11 @@ VALUES
 (8, 43218765, 'Lucía Torres', 'lucia.torres@example.com', 4567890122),
 (9, 65432187, 'Antonio Díaz', 'antonio.diaz@example.com', 5678901233),
 (10, 76543219, 'Elena Pérez', 'elena.perez@example.com', 6789012344);
+
+-- Datos para la tabla Administrador
+INSERT INTO Administrador (A_ID, A_NombreApellido, A_Email, A_Password)
+VALUES 
+(1, 'Admin Principal', 'admin@admin.com', 'admin123');
 
 -- Datos para la tabla Evento
 INSERT INTO Evento (E_ID, E_Fecha, E_HoraInicio, E_HoraFin, E_Tipo, E_CantInvitados, E_Estado, Cliente_C_ID, Salon_SA_ID)
@@ -160,3 +181,56 @@ VALUES
 (8, 8, 1500.00),
 (9, 9, 1000.00),
 (10, 10, 2000.00);
+
+-- ==========================================================
+-- VISTAS (Reportes y consultas calculadas)
+-- ==========================================================
+
+-- Vista para reporte de pagos por cliente
+CREATE OR REPLACE VIEW VistaPagosPorCliente AS
+SELECT 
+    c.C_NombreApellido AS Cliente, 
+    SUM(p.P_MontoPagado) AS TotalPagado
+FROM Pago p
+JOIN Evento e ON p.Evento_E_ID = e.E_ID
+JOIN Cliente c ON e.Cliente_C_ID = c.C_ID
+GROUP BY c.C_ID, c.C_NombreApellido;
+
+-- Vista para detalles dinámicos del Evento (Costo y Saldo)
+CREATE OR REPLACE VIEW VistaDetallesEvento AS
+SELECT 
+    e.E_ID AS EventoID,
+    c.C_NombreApellido AS Cliente,
+    s.SA_Nombre AS Salon,
+    e.E_Fecha AS Fecha,
+    e.E_HoraInicio AS HoraInicio,
+    e.E_HoraFin AS HoraFin,
+    e.E_Tipo AS Tipo,
+    e.E_CantInvitados AS Invitados,
+    e.E_Estado AS Estado,
+    s.SA_Costo + COALESCE((SELECT SUM(CON_Precio) FROM Contratados WHERE Evento_E_ID = e.E_ID), 0) AS CostoTotal,
+    (s.SA_Costo + COALESCE((SELECT SUM(CON_Precio) FROM Contratados WHERE Evento_E_ID = e.E_ID), 0)) - COALESCE((SELECT SUM(P_MontoPagado) FROM Pago WHERE Evento_E_ID = e.E_ID), 0) AS SaldoPendiente
+FROM Evento e
+JOIN Cliente c ON e.Cliente_C_ID = c.C_ID
+JOIN Salon s ON e.Salon_SA_ID = s.SA_ID;
+
+-- Vista para VistasEventosConfirmados (Reportes)
+CREATE OR REPLACE VIEW VistasEventosConfirmados AS
+SELECT 
+    E.E_ID AS EventoID, 
+    E.E_Tipo AS TipoEvento, 
+    E.E_Fecha AS FechaEvento, 
+    E.E_HoraInicio AS HoraInicio, 
+    E.E_HoraFin AS HoraFin, 
+    E.E_CantInvitados AS CantidadInvitados, 
+    (S.SA_Costo + COALESCE((SELECT SUM(CON_Precio) FROM Contratados WHERE Evento_E_ID = E.E_ID), 0)) AS CostoTotal, 
+    C.C_NombreApellido AS Cliente, 
+    S.SA_Nombre AS Salon
+FROM 
+    Evento E
+JOIN 
+    Cliente C ON E.Cliente_C_ID = C.C_ID
+JOIN 
+    Salon S ON E.Salon_SA_ID = S.SA_ID
+WHERE 
+    E.E_Estado = 'confirmado';
